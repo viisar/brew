@@ -12,6 +12,10 @@ def min(probs):
 def mean(probs):
     return probs.mean(axis=1).argmax()
 
+def median(probs):
+    # array has no method median
+    return np.median(probs, axis=1).argmax()
+
 def majority_vote(delta):
     """ Returns the class label that had the majority of votes
     """
