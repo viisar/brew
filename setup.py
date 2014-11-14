@@ -28,7 +28,7 @@ setup(
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
     author='Dayvid Victor',
     author_email='victor.dvro@gmail.com',
-    url='https://github.com/dvro/brew',
+    url='https://github.com/viisar/brew',
     packages=[
         'brew',
     ],
