@@ -6,8 +6,10 @@ def max(probs):
     """
     return probs.max(axis=1).argmax()
 
+def min(probs):
+    return probs.min(axis=1).argmax()
+
 def majority_vote(delta):
     """ Returns the class label that had the majority of votes
     """
-
     return delta.sum(axis=1).argmax()
