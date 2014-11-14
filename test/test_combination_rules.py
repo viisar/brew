@@ -3,8 +3,8 @@ Tests for `brew.combination.combiner` module.
 """
 
 import numpy as np
-from brew.combination.combiner import majority_vote
-from brew.combination.combiner import max
+from brew.combination.rules import majority_vote
+from brew.combination.rules import max
 
 
 class TestMajorityVote():
