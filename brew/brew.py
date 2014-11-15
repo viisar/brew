@@ -2,8 +2,11 @@
 
 class Ensemble(object):
 
-    def __init__(self):
-        self.classifiers = []
+    def __init__(self, classifiers=None):
+        if classifiers == None:
+            self.classifiers = []
+        else:
+            self.classifiers = classifiers
 
     def add(self, classifier):
         self.classifiers.append(classifier)
