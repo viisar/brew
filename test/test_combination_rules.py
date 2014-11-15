@@ -5,13 +5,13 @@ Tests for `brew.combination.rules` module.
 import numpy as np
 
 # rules that expect the posterior probabilities
-from brew.combination.rules import max
-from brew.combination.rules import min
-from brew.combination.rules import mean
-from brew.combination.rules import median
+from brew.combination.rules import max_rule
+from brew.combination.rules import min_rule
+from brew.combination.rules import mean_rule
+from brew.combination.rules import median_rule
 
 # rules that expect the decision votes
-from brew.combination.rules import majority_vote
+from brew.combination.rules import majority_vote_rule
 
 
 class TestAllProbRules():
@@ -22,25 +22,24 @@ class TestAllProbRules():
 
     def test_with_one_classifier_one_class(self):
         example = np.array([[1.]])
-        assert max(example) == 0
-        assert min(example) == 0
-        assert mean(example) == 0
-        assert median(example) == 0
+        assert max_rule(example) == 0
+        assert min_rule(example) == 0
+        assert mean_rule(example) == 0
+        assert median_rule(example) == 0
     
     def test_with_mult_classifiers_one_class(self):
         example = np.array([[0.3, 0.5, 0.1]])
-        assert max(example) == 0
-        assert min(example) == 0
-        assert mean(example) == 0
-        assert median(example) == 0
+        assert max_rule(example) == 0
+        assert min_rule(example) == 0
+        assert mean_rule(example) == 0
+        assert median_rule(example) == 0
     
-
     def test_with_one_classifier_mult_classes(self):
         example = np.array([[0.1],[0.5],[0.4]])
-        assert max(example) == 1
-        assert min(example) == 1
-        assert mean(example) == 1
-        assert median(example) == 1
+        assert max_rule(example) == 1
+        assert min_rule(example) == 1
+        assert mean_rule(example) == 1
+        assert median_rule(example) == 1
 
 
 class TestMax():
@@ -50,7 +49,7 @@ class TestMax():
                                 [0.2, 0.2, 0.1],
                                 [0.5, 0.2, 0.7]  ] )
 
-        assert max(example) == 2
+        assert max_rule(example) == 2
 
 
 class TestMin():
@@ -59,7 +58,7 @@ class TestMin():
                                 [0.3, 0.25, 0.7],
                                 [0.2,  0.6, 0.2]  ] )
 
-        assert min(example) == 1
+        assert min_rule(example) == 1
 
 
 class TestMean():
@@ -68,7 +67,7 @@ class TestMean():
                                 [0.2, 0.2, 0.1],
                                 [0.5, 0.2, 0.7]  ] )
 
-        assert mean(example) == 2
+        assert mean_rule(example) == 2
 
 class TestMedian():
     def test_with_mult_classifiers_mult_classes(self):
@@ -76,7 +75,7 @@ class TestMedian():
                                 [0.5, 0.2, 0.1],
                                 [0.2, 0.2, 0.7]  ] )
 
-        assert median(example) == 0
+        assert median_rule(example) == 0
 
 
 class TestMajorityVote():
@@ -87,14 +86,14 @@ class TestMajorityVote():
 
     def test_with_one_classifier_one_class(self):
         example = np.array([[1]])
-        assert majority_vote(example) == 0
+        assert majority_vote_rule(example) == 0
     
     def test_with_one_classifier_mult_classes(self):
         example = np.array([[0],[0],[1]])
-        assert majority_vote(example) == 2
+        assert majority_vote_rule(example) == 2
 
     def test_with_mult_classifiers_mult_classes(self):
         example = np.array( [   [0, 0, 0],
                                 [1, 0, 1],
                                 [0, 1, 0]   ] )
-        assert majority_vote(example) == 1
+        assert majority_vote_rule(example) == 1
