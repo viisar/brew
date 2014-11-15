@@ -1,5 +1,19 @@
 import numpy as np
 
+def paired_metric_ensemble(ensemble, X, y, paired_metric=q_statistics):
+    classifiers = ensemble.classifiers
+    size = len(classifiers)
+    diversities = []
+    for i in range(size):
+        for j in range(i):
+            y_pred_a = classifiers[i].predict(X)
+            y_pred_b = classifiers[j].predict(X)
+            diversity = paired_metric(y, y_pred_a, y_pred_b)
+            diversities = diversities + [diversity]
+
+    return np.mean(diversities)
+
+
 def __get_coefficients(y_true, y_pred_a, y_pred_b):
     a, b, c, d = 0, 0, 0, 0
     for i in range(y_true.shape[0]):
