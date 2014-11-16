@@ -1,5 +1,5 @@
 from brew import Ensemble
-from brew.combination.rules import majority_vote
+from brew.combination.rules import majority_vote_rule
 from .base import PoolGenerator
 
 import numpy as np
@@ -7,7 +7,7 @@ from sklearn.ensemble import BaggingClassifier
 
 class Bagging(PoolGenerator):
 
-    def __init__(self, base_classifier=None, n_estimators=100, combination_rule=majority_vote):
+    def __init__(self, base_classifier=None, n_estimators=100, combination_rule=majority_vote_rule):
         self.base_classifier = base_classifier
         self.n_estimators = n_estimators
         self.combination_rule = combination_rule
