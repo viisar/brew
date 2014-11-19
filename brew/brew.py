@@ -4,7 +4,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 import sklearn.datasets as datasets
 import combination.rules as rules
-
+from combination.combiner import Combiner
 
 
 def transform2votes(output):
@@ -69,20 +69,17 @@ class Ensemble(object):
 
 class EnsembleClassifier(object):
 
-    def __init__(self, ensemble=None, combiner=None):
+    def __init__(self, ensemble=None, combination_rule=None):
         self.ensemble = ensemble
-
-        if combiner != rules.majority_vote:
-            raise Exception("Use majority voting for the time being!")
-
-        self.combiner = combiner
+        self.combiner = Combiner(rule=combination_rule)
 
     def predict(X):
 
         # TODO: warn the user if mode of ensemble
-        # output excludes the chosen combiner
-        out = self.ensemble.output(X, mode='vote')
-        y = self.combiner(out)
+        # output excludes the chosen combiner?
+
+        out = self.ensemble.output(X)
+        y = self.combiner.combine(out)
 
         return y
 
@@ -123,9 +120,6 @@ if __name__ == '__main__':
 
     pool.add(c1)
     
-    out = pool.output(X_test)
-
-    print(out.shape)
-
-    print(rules.majority_vote_rule(out))
-
+    model = EnsembleClassifier(pool, 'majority_vote')
+    
+    print(model.predict(X_test))
