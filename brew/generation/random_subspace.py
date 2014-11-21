@@ -18,10 +18,15 @@ class RandomSubspace(PoolGenerator):
         
 
     def fit(self, X, y):
+        self.X = X
+        self.y = y
+
         self.sk_random_subspace.fit(X, y)
         self.classifiers = self.sk_random_subspace.estimators_
         self.ensemble = Ensemble(classifiers=self.classifiers)
         self.classes_ = set(y)
+
+        return self
 
 
     def predict(self, X):
