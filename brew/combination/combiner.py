@@ -1,3 +1,4 @@
+import numpy as np
 import brew.combination.rules as rules
 
 class Combiner(object):
@@ -23,7 +24,7 @@ class Combiner(object):
             raise Exception('invalid argument rule for Combiner class')
 
 
-    def combine(results):
+    def combine(self, results):
 
         n_samples = results.shape[0]
 
