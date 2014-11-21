@@ -49,8 +49,8 @@ class Ensemble(object):
         out = np.zeros((X.shape[0], n_classes, len(self.classifiers)))
 
         for i, c in enumerate(self.classifiers):
-            tmp = c.predict(X) # [n_samples, 1]
-            votes = transform2votes(tmp, n_classes) # [n_samples, n_classes]
+            tmp = c.predict(X) # (n_samples,)
+            votes = transform2votes(tmp, n_classes) # (n_samples, n_classes)
             out[:,:,i] = votes
 
         return out
@@ -80,3 +80,5 @@ class EnsembleClassifier(object):
         y = self.combiner.combine(out)
 
         return y
+
+
