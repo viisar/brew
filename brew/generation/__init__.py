@@ -1,5 +1,6 @@
-from bagging import Bagging
-from random_subspace import RandomSubspace
+from brew.generation.bagging import Bagging
+from brew.generation.random_subspace import RandomSubspace
 
 __all__ = ['Bagging',
-           'RandomSubspace']
+           'RandomSubspace',
+            'RandomNewspace']

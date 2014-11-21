@@ -1,6 +1,5 @@
 import numpy as np
 
-import brew.combination.rules as rules
 from brew.combination.combiner import Combiner
 
 
