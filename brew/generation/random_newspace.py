@@ -12,7 +12,7 @@ from sklearn.decomposition import PCA
 
 class RandomNewspace(PoolGenerator):
 
-    def __init__(self, K=10, bootstrap_samples=0.75, bootstrap_features=0.75, base_classifier=None, n_estimators=100,
+    def __init__(self, K=10, bootstrap_samples=0.75, bootstrap_features=0.75, base_classifier=None, n_classifiers=100,
             combination_rule=majority_vote_rule, max_samples=1.0, max_features=0.5):
 
         self.K = K
@@ -20,9 +20,9 @@ class RandomNewspace(PoolGenerator):
         self.bootstrap_features = bootstrap_features        
 
         self.base_classifier = base_classifier
-        self.n_estimators = n_estimators
+        self.n_classifiers = n_classifiers
         self.combination_rule = combination_rule
-        self.random_subspace = RandomSubspace(base_classifier=base_classifier, n_estimators=n_estimators, 
+        self.random_subspace = RandomSubspace(base_classifier=base_classifier, n_estimators=n_classifiers, 
                 combination_rule=combination_rule, max_features=max_features)
         self.random_subspace.sk_random_subspace.max_samples = max_samples
 

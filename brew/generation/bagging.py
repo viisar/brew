@@ -7,12 +7,12 @@ from sklearn.ensemble import BaggingClassifier
 
 class Bagging(PoolGenerator):
 
-    def __init__(self, base_classifier=None, n_estimators=100, combination_rule=majority_vote_rule):
+    def __init__(self, base_classifier=None, n_classifiers=100, combination_rule=majority_vote_rule):
         self.base_classifier = base_classifier
-        self.n_estimators = n_estimators
+        self.n_classifiers = n_classifiers
         self.combination_rule = combination_rule
         self.sk_bagging = BaggingClassifier(base_estimator=base_classifier,
-                n_estimators=n_estimators, max_samples=1.0, max_features=1.0)
+                n_estimators=n_classifiers, max_samples=1.0, max_features=1.0)
         self.classifiers = None
         self.ensemble = None
         

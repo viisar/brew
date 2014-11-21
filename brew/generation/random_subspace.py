@@ -7,12 +7,12 @@ from sklearn.ensemble import BaggingClassifier
 
 class RandomSubspace(PoolGenerator):
 
-    def __init__(self, base_classifier=None, n_estimators=100, combination_rule=majority_vote_rule, max_features=0.5):
+    def __init__(self, base_classifier=None, n_classifiers=100, combination_rule=majority_vote_rule, max_features=0.5):
         self.base_classifier = base_classifier
-        self.n_estimators = n_estimators
+        self.n_classifiers = n_classifiers
         self.combination_rule = combination_rule
         self.sk_random_subspace = BaggingClassifier(base_estimator=base_classifier,
-                n_estimators=n_estimators, max_samples=1.0, max_features=max_features)
+                n_estimators=n_classifiers, max_samples=1.0, max_features=max_features)
         self.classifiers = None
         self.ensemble = None
         
