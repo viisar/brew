@@ -2,7 +2,6 @@
 Tests for `brew` module.
 """
 import pytest
-from brew import brew
 
 
 class TestBrew(object):

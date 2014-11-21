@@ -1,10 +1,16 @@
 """
-Tests for `brew.brew` module.
-"""
+Tests for `brew.brew` module.  """
 
 import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
 
-import brew.Ensemble as Ensemble
+from brew.brew import transform2votes
+from brew.brew import Ensemble
+from brew.brew import EnsembleClassifier
+
+from brew.combination.combiner import Combiner
 
 
 class MockClassifier():
@@ -18,6 +24,53 @@ class MockClassifier():
         pass
 
 
+class TestTransform2Votes():
+
+    def test_one_example_one_class(self):
+        sample = np.array([0])
+        correct_votes = np.array([[1]])
+
+        assert np.all(transform2votes(sample, 1) == correct_votes)
+
+    def test_one_example_mult_classes(self):
+        sample = np.array([2])
+        correct_votes = np.array([[0,0,1]])
+
+        assert np.all(transform2votes(sample, 3) == correct_votes)
+
+    def test_mult_examples_one_class(self):
+        sample = np.array([0,0,0,0])
+        correct_votes = np.array([[1],[1],[1],[1]])
+
+        assert np.all(transform2votes(sample, 1) == correct_votes)
+
+    def test_mult_examples_mult_classes(self):
+        sample = np.array([0,2,1,2])
+
+        correct_votes = np.array([  [1,0,0],
+                                    [0,0,1],
+                                    [0,1,0],
+                                    [0,0,1] ])
+
+        assert np.all(transform2votes(sample, 3) == correct_votes)
+
+
+    def test_complex_example(self):
+        sample = np.array([0,1,1,2,3,1,4,3,2])
+
+        correct_votes = np.array([  [1,0,0,0,0],
+                                    [0,1,0,0,0],
+                                    [0,1,0,0,0],
+                                    [0,0,1,0,0],
+                                    [0,0,0,1,0],
+                                    [0,1,0,0,0],
+                                    [0,0,0,0,1],
+                                    [0,0,0,1,0],
+                                    [0,0,1,0,0]    ])
+
+        assert np.all(transform2votes(sample, 5) == correct_votes)
+
+
 class TestEnsemble():
 
     def test_empty_init(self):
@@ -28,14 +81,14 @@ class TestEnsemble():
     def test_init_one_classifier(self):
         c = MockClassifier()
         ens = Ensemble(classifiers=[c])
-        assert len(self.classifiers) == 1
+        assert len(ens.classifiers) == 1
 
     def test_init_mult_classifiers(self):
         c1 = MockClassifier()
         c2 = MockClassifier()
         c3 = MockClassifier()
         ens = Ensemble(classifiers=[c1,c2,c3])
-        assert len(self.classifiers) == 3
+        assert len(ens.classifiers) == 3
 
     def test_len_with_empty_init(self):
         ens = Ensemble()
@@ -57,5 +110,26 @@ class TestEnsemble():
         ens = Ensemble()
         c = MockClassifier()
         ens.add(c)
-        assert self.classifiers[0] is c
+        assert ens.classifiers[0] is c
+
+    def test_output_with_real_dataset(self):
+        pass
+        
+
+class TestEnsembleClassifier():
+
+    def test__arguments(self):
+
+        c = MockClassifier()
+
+        pool = Ensemble(classifiers=[c])
+        combiner = Combiner(rule='majority_vote')
+
+        model = EnsembleClassifier(ensemble=pool, combiner=combiner)
+
+    def test_none_combiner(self):
+        c = MockClassifier()
+
+        pool = Ensemble(classifiers=[c])
+        model = EnsembleClassifier(ensemble=pool)
 
