@@ -5,13 +5,7 @@ from brew.combination.combiner import Combiner
 
 def transform2votes(output, n_classes):
 
-    # TODO: it's getting the number of classes
-    # using the predictions, this can FAIL
-    # if there is a class which is never
-    # predicted, fix LATER
-
     n_samples = output.shape[0]
-    #n_classes = np.unique(output).size
 
     votes = np.zeros((n_samples, n_classes))
 
@@ -19,8 +13,6 @@ def transform2votes(output, n_classes):
     for i in range(n_samples):
         idx = output[i]
         votes[i, idx] = 1
-
-    #if np.sum(votes.sum(axis=1)) != n_samples
 
     return votes.astype('int')
 
@@ -43,7 +35,18 @@ class Ensemble(object):
     def add_ensemble(self, ensemble):
         self.classifiers = self.add_classifiers(ensemble.classifiers)
 
-    def output(self, X, n_classes=2):
+    def get_classes(self):
+        classes = set()
+        for c in self.classifiers:
+            classes = classes.union(set(c.classes_))
+
+        self.classes_ = list(classes)
+        return self.classes_
+
+    def output(self, X):
+
+        # assumes that all classifiers were trained with the same number of classes
+        n_classes = len(self.get_classes())
 
         out = np.zeros((X.shape[0], n_classes, len(self.classifiers)))
 
