@@ -27,7 +27,7 @@ from brew.generation.random_newspace import RandomNewspace
 from brew.combination.rules import majority_vote_rule
 
 
-n_classifiers = 50
+n_classifiers = 10
 combination_rule=majority_vote_rule
 max_samples=0.75
 max_features=0.75
