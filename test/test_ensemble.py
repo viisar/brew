@@ -1,14 +1,14 @@
 """
-Tests for `brew.brew` module.  """
+Tests for `brew.base` module.  """
 
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 
-from brew.brew import transform2votes
-from brew.brew import Ensemble
-from brew.brew import EnsembleClassifier
+from brew.base import transform2votes
+from brew.base import Ensemble
+from brew.base import EnsembleClassifier
 
 from brew.combination.combiner import Combiner
 
