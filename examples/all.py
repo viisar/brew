@@ -28,7 +28,7 @@ from brew.combination.rules import majority_vote_rule
 
 
 n_classifiers = 10
-combination_rule=majority_vote_rule
+combination_rule='majority_vote'
 max_samples=1.0
 max_features=0.5
 K=2
