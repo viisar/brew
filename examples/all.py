@@ -29,13 +29,15 @@ from brew.combination.rules import majority_vote_rule
 
 n_classifiers = 10
 combination_rule=majority_vote_rule
-max_samples=0.75
-max_features=0.75
-K=10
+max_samples=1.0
+max_features=0.5
+K=2
 bootstrap_samples=0.75
 bootstrap_features=0.75
+n_components=1
 
 X, y = datasets.make_hastie_10_2(n_samples=5000, random_state=1)
+X = X[:,range(5)]
 d = {}
 for v, key in enumerate(set(y)):
     d[key] = v
@@ -53,6 +55,8 @@ dt_err = 1.0 - dt.score(X_test, y_test)
 def ensemble_error(get_ensemble):
     error = np.zeros((n_classifiers,))
     for i in range(n_classifiers):
+        if (i+1) % (n_classifiers/10) == 0:
+            print i+1
         ensemble = get_ensemble(i+1)
         ensemble.fit(X_train, y_train)
         y_pred_tst = ensemble.predict(X_test)
@@ -65,7 +69,7 @@ bagging_error = ensemble_error(get_ensemble=lambda i: Bagging(base_classifier=dt
 print('running random subspace')
 r_subspace_error = ensemble_error(get_ensemble=lambda i: RandomSubspace(base_classifier=dt, n_classifiers=i, combination_rule=combination_rule, max_features=max_features))
 print('running random newspace')
-r_newspace_error = ensemble_error(get_ensemble=lambda i: RandomNewspace(base_classifier=dt, n_classifiers=i, combination_rule=combination_rule, K=K, bootstrap_samples=bootstrap_samples, bootstrap_features=bootstrap_features, max_samples=max_samples, max_features=max_features))
+r_newspace_error = ensemble_error(get_ensemble=lambda i: RandomNewspace(base_classifier=dt, n_classifiers=i, combination_rule=combination_rule, K=K, bootstrap_samples=bootstrap_samples, bootstrap_features=bootstrap_features, max_samples=max_samples, max_features=max_features, n_components=n_components))
 print('plotting graph')
 
 fig = plt.figure()
@@ -77,12 +81,11 @@ ax.plot([1, n_classifiers], [dt_err] * 2, 'k--',
 ax.plot(np.arange(n_classifiers) + 1, bagging_error,
         label='Bagging',
         color='red')
-
-ax.plot(np.arange(n_classifiers) + 1, r_subspace_error,
-        label='Random Subspace',
-        color='blue')
 ax.plot(np.arange(n_classifiers) + 1, r_newspace_error,
         label='Random Newspace',
+        color='blue')
+ax.plot(np.arange(n_classifiers) + 1, r_subspace_error,
+        label='Random Subspace',
         color='green')
 
 ax.set_title('Comparision')
@@ -91,7 +94,7 @@ ax.set_xlabel('n_classifiers')
 ax.set_ylabel('error rate')
 
 #leg = ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-leg = ax.legend(loc=1, scatterpoints=1, ncol=2)
+leg = ax.legend(loc=4, scatterpoints=1, ncol=2)
 #leg = ax.legend(loc='upper right', mode="expand", borderaxespad=0)
 leg.get_frame().set_alpha(0.7)
 
