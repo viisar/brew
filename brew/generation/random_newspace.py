@@ -13,7 +13,7 @@ from .base import PoolGenerator
 
 class RandomNewspace(PoolGenerator):
 
-    def __init__(self, K=10, bootstrap_samples=0.75, bootstrap_features=0.75, base_classifier=None, n_classifiers=100,
+    def __init__(self, K=10, bootstrap_samples=0.75, bootstrap_features=0.75, n_components=1, base_classifier=None, n_classifiers=100,
             combination_rule=majority_vote_rule, max_samples=1.0, max_features=0.5):
 
         self.K = K
@@ -27,7 +27,7 @@ class RandomNewspace(PoolGenerator):
                 combination_rule=combination_rule, max_features=max_features)
         self.random_subspace.sk_random_subspace.max_samples = max_samples
 
-        self.pca_transformers = [PCA(n_components=1) for i in range(self.K)]
+        self.pca_transformers = [PCA(n_components=n_components) for i in range(self.K)]
         self.lda_transformers = [LDA() for i in range(self.K)]
         self.mask_transformers = None
         self.classifiers = None
@@ -52,6 +52,9 @@ class RandomNewspace(PoolGenerator):
             #print (i, self.K), (len(X), len(sX)), (len(X[0]), len(mask))
             sX = sX[:,mask]
             
+            if self.pca_transformers[i].n_components > sum(mask):
+                self.pca_transformers[i].n_components = sum(mask)
+
             self.pca_transformers[i].fit(sX)
             self.lda_transformers[i].fit(sX, sy)
 
