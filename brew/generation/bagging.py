@@ -1,4 +1,4 @@
-from brew.brew import Ensemble
+from brew.base import Ensemble
 from brew.combination.rules import majority_vote_rule
 from .base import PoolGenerator
 

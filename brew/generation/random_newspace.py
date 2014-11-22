@@ -1,14 +1,15 @@
-from brew import Ensemble
-from brew.combination.rules import majority_vote_rule
-from .base import PoolGenerator
-
-from brew.generation import Bagging
-from brew.generation import RandomSubspace
-
 import numpy as np
+
+import sklearn
 from sklearn.ensemble import BaggingClassifier
 from sklearn.lda import LDA
 from sklearn.decomposition import PCA
+
+from brew.base import Ensemble
+from brew.combination.rules import majority_vote_rule
+from brew.generation import RandomSubspace
+
+from .base import PoolGenerator
 
 class RandomNewspace(PoolGenerator):
 
@@ -22,7 +23,7 @@ class RandomNewspace(PoolGenerator):
         self.base_classifier = base_classifier
         self.n_classifiers = n_classifiers
         self.combination_rule = combination_rule
-        self.random_subspace = RandomSubspace(base_classifier=base_classifier, n_estimators=n_classifiers, 
+        self.random_subspace = RandomSubspace(base_classifier=base_classifier, n_classifiers=n_classifiers, 
                 combination_rule=combination_rule, max_features=max_features)
         self.random_subspace.sk_random_subspace.max_samples = max_samples
 
@@ -40,7 +41,7 @@ class RandomNewspace(PoolGenerator):
         self.mask_transformers = []
 
         for i in range(self.K):
-            tmp, tmp, sX, sy = sklearn.cross_validation.test_train_split(X, y, test_size=bootstrap_samples)
+            tmp, sX, tmp, sy = sklearn.cross_validation.train_test_split(X, y, test_size=self.bootstrap_samples)
 
             mask = np.ceil(self.bootstrap_features * X.shape[1]) * [True]
             mask = mask + (X.shape[1] - len(mask)) * [False]
@@ -48,14 +49,15 @@ class RandomNewspace(PoolGenerator):
             mask = np.array(mask, dtype=bool)
 
             self.mask_transformers += [mask]
+            #print (i, self.K), (len(X), len(sX)), (len(X[0]), len(mask))
             sX = sX[:,mask]
             
             self.pca_transformers[i].fit(sX)
             self.lda_transformers[i].fit(sX, sy)
 
-            new_features = self.pca_transformers[i].transform(X)
+            new_features = self.pca_transformers[i].transform(X[:,mask])
             new_X = np.concatenate((new_X, new_features), axis=1)
-            new_features = self.lda_transformers[i].transform(X)
+            new_features = self.lda_transformers[i].transform(X[:,mask])
             new_X = np.concatenate((new_X, new_features), axis=1)
 
 
@@ -68,7 +70,7 @@ class RandomNewspace(PoolGenerator):
 
     def predict(self, X):
         X_tst = np.array(X)
-        for i in range(self.K)
+        for i in range(self.K):
             mask = self.mask_transformers[i]
             new_features = self.pca_transformers[i].transform(X[:,mask])
             X_tst = np.concatenate((X_tst, new_features), axis=1)

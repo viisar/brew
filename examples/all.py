@@ -19,25 +19,31 @@ import matplotlib.pyplot as plt
 from sklearn import datasets
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import zero_one_loss
+from sklearn.cross_validation import train_test_split
 
 from brew.generation.bagging import Bagging
 from brew.generation.random_subspace import RandomSubspace
 from brew.generation.random_newspace import RandomNewspace
+from brew.combination.rules import majority_vote_rule
 
 
-n_classifiers = 100
+n_classifiers = 50
 combination_rule=majority_vote_rule
 max_samples=0.75
-max_features=0.5
+max_features=0.75
 K=10
 bootstrap_samples=0.75
 bootstrap_features=0.75
 
-
-
 X, y = datasets.make_hastie_10_2(n_samples=5000, random_state=1)
-X_test, y_test = X[:1500], y[:1500]
-X_train, y_train = X[1500:], y[1500:]
+d = {}
+for v, key in enumerate(set(y)):
+    d[key] = v
+y = np.asarray([d[yi] for yi in y])
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
+
+#X_test, y_test = X[:150], y[:150]
+#X_train, y_train = X[150:], y[150:]
 
 #dt = DecisionTreeClassifier(max_depth=1, min_samples_leaf=1)
 dt = DecisionTreeClassifier(max_depth=9, min_samples_leaf=1)
@@ -47,17 +53,20 @@ dt_err = 1.0 - dt.score(X_test, y_test)
 def ensemble_error(get_ensemble):
     error = np.zeros((n_classifiers,))
     for i in range(n_classifiers):
-        ensemble = get_ensemble(i)
+        ensemble = get_ensemble(i+1)
         ensemble.fit(X_train, y_train)
         y_pred_tst = ensemble.predict(X_test)
         error[i] = zero_one_loss(y_pred_tst, y_test)
     return error
 
 
+print('running bagging')
 bagging_error = ensemble_error(get_ensemble=lambda i: Bagging(base_classifier=dt, n_classifiers=i, combination_rule=combination_rule))
+print('running random subspace')
 r_subspace_error = ensemble_error(get_ensemble=lambda i: RandomSubspace(base_classifier=dt, n_classifiers=i, combination_rule=combination_rule, max_features=max_features))
+print('running random newspace')
 r_newspace_error = ensemble_error(get_ensemble=lambda i: RandomNewspace(base_classifier=dt, n_classifiers=i, combination_rule=combination_rule, K=K, bootstrap_samples=bootstrap_samples, bootstrap_features=bootstrap_features, max_samples=max_samples, max_features=max_features))
-
+print('plotting graph')
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -87,4 +96,5 @@ leg = ax.legend(loc=1, scatterpoints=1, ncol=2)
 leg.get_frame().set_alpha(0.7)
 
 plt.savefig('test.png')
+print('done')
 plt.show()
