@@ -9,14 +9,18 @@ from brew.combination.rules import majority_vote_rule
 from brew.combination.combiner import Combiner
 from brew.generation import Bagging
 
+from brew.metrics.evaluation import auc_score
+from brew.metrics.diversity.paired import paired_metric_ensemble
+
 from .base import PoolGenerator
 
 class AdaptiveBagging(PoolGenerator):
 
-    def __init__(self, K=10, n_components=1, base_classifier=None, n_classifiers=100,
+    def __init__(self, K=10, alpha=0.75, base_classifier=None, n_classifiers=100,
             combination_rule='majority_vote', max_samples=1.0):
 
         self.K = K
+        self.alpha = alpha
 
         self.base_classifier = base_classifier
         self.n_classifiers = n_classifiers
@@ -34,12 +38,21 @@ class AdaptiveBagging(PoolGenerator):
 
 
     def fitness(self, classifier):
-        #TODO implement classifier
-        return np.random.random()
+        #TODO check different diversities and normalize
+        self.ensemble.add(classifier)
+        out = self.ensemble.output(self.validation_X)
+        y_pred = self.combiner.combine(out)
+        y_true = self.validation_y
+        auc = auc_score(y_true, y_pred)
+
+        diversity = paired_metric_ensemble(ensemble, 
+                self.validation_X, self.validation_y)
+         
+        self.ensemble.classifiers = self.ensemble.classifiers[:-1]
+        return self.alpha * auc + (1.0 - self.alpha) * diversity
 
 
     def fit(self, X, y):
-
         if self.validation_X == None and self.validation_y == None:
             self.validation_X = X
             self.validation_y = y
