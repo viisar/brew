@@ -50,7 +50,7 @@ class AdaptiveBagging(PoolGenerator):
         y_true = self.validation_y
         auc = auc_score(y_true, y_pred)
 
-        diversity = paired_metric_ensemble(ensemble, 
+        diversity = paired_metric_ensemble(self.ensemble, 
                 self.validation_X, self.validation_y)
          
         self.ensemble.classifiers.pop()
@@ -59,9 +59,9 @@ class AdaptiveBagging(PoolGenerator):
 
     def _calc_pos_prob(self):
         y_pred = self.combiner.combine(self.ensemble.output(self.validation_X))
-        mask = self.positive_label == y
-        pos_acc = float(sum(y_pred[mask] == y[mask]))/len(y[mask])
-        neg_acc = float(sum(y_pred[~mask] == y[~mask]))/len(y[~mask])
+        mask = self.positive_label == self.validation_y
+        pos_acc = float(sum(y_pred[mask] == self.validation_y[mask]))/len(self.validation_y[mask])
+        neg_acc = float(sum(y_pred[~mask] == self.validation_y[~mask]))/len(self.validation_y[~mask])
         return 1.0 - (pos_acc / (pos_acc + neg_acc))
 
 
@@ -71,8 +71,8 @@ class AdaptiveBagging(PoolGenerator):
 
         clfs = []
         for i in range(K):
+            cX, cy = [], []
             for j in range(X.shape[0]):
-                cX, cy = [], []
                 if np.random.random() < pos_prob:
                     idx = np.random.random_integers(0, len(X[mask]) - 1)
                     cX = cX + [X[mask][idx]]
@@ -85,12 +85,12 @@ class AdaptiveBagging(PoolGenerator):
                 idx_1 = np.random.random_integers(0, len(cX) - 1)
                 idx_2 = np.random.random_integers(0, len(X[mask])- 1)
                 cX[idx_1] = X[mask][idx_2]
-                cy[idx_1] = negative_label
+                cy[idx_1] = self.positive_label
             elif not negative_label in cy:
                 idx_1 = np.random.random_integers(0, len(cX) - 1)
                 idx_2 = np.random.random_integers(0, len(X[~mask])- 1)
                 cX[idx_1] = X[~mask][idx_2]
-                cy[idx_1] = self.positive_label
+                cy[idx_1] = negative_label
 
             clf = sklearn.base.clone(self.base_classifier)
             clfs = clfs + [clf.fit(cX, cy)]
