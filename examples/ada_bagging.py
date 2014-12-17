@@ -33,7 +33,7 @@ n_classifiers = 10
 combination_rule='majority_vote'
 max_samples=1.0
 max_features=0.5
-K=2
+K=10
 bootstrap_samples=0.75
 bootstrap_features=0.75
 n_components=1
@@ -44,6 +44,15 @@ d = {}
 for v, key in enumerate(set(y)):
     d[key] = v
 y = np.asarray([d[yi] for yi in y])
+
+mask = y == 1
+X_1, X_0 = X[mask], X[~mask]
+X_1 = X_1[:500]
+
+X = np.concatenate([X_0,X_1], axis = 0)
+y = np.array(2500*[0] + 500*[1])
+
+
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
 
 #X_test, y_test = X[:150], y[:150]
@@ -83,9 +92,9 @@ ax = fig.add_subplot(111)
 ax.plot([1, n_classifiers], [dt_err] * 2, 'k--',
         label='Decision Tree Error')
 
-ax.plot(np.arange(n_classifiers) + 1, bagging_error,
-        label='Bagging',
-        color='red')
+ax.plot(np.arange(n_classifiers) + 1, a_bagging_error,
+        label='ABagging',
+        color='black')
 ax.plot(np.arange(n_classifiers) + 1, bagging_error,
         label='Bagging',
         color='red')
