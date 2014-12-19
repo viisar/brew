@@ -13,7 +13,7 @@ def entropy_measure_e(ensemble, X, y):
 
         factor = factor + min(right, wrong)
 
-    e = (1.0/len(X)) * (2.0/(len(ensemble) - 1)) * factor
+    e = (1.0/len(X)) * (1.0 / (len(ensemble) - len(ensemble)/2)) * factor
     return e
 
 def kohavi_wolpert_variance(ensemble, X, y):

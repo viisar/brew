@@ -11,6 +11,7 @@ from brew.generation import Bagging
 
 from brew.metrics.evaluation import auc_score
 from brew.metrics.diversity.paired import paired_metric_ensemble
+from brew.metrics.diversity.non_paired import entropy_measure_e
 
 from .base import PoolGenerator
 
@@ -49,10 +50,12 @@ class AdaptiveBagging(PoolGenerator):
         y_pred = self.combiner.combine(out)
         y_true = self.validation_y
         auc = auc_score(y_true, y_pred)
-
+        '''
         diversity = paired_metric_ensemble(self.ensemble, 
                 self.validation_X, self.validation_y)
-         
+        '''
+        diversity = entropy_measure_e(self.ensemble,
+                self.validation_X, self.validation_y)
         self.ensemble.classifiers.pop()
         return self.alpha * auc + (1.0 - self.alpha) * diversity
 
