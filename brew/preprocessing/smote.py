@@ -9,6 +9,13 @@ def smote(T, N=100, k=1):
     N: percentage of oversampling
     k: number of neighbors used
     """
+
+    # modification of original smote code so that it won't break if
+    # minority class is too small in relation to the k
+    if T.shape[0] <= k+1:
+        idx = np.random.choice(T.shape[0], size=(k+1,))
+        T = T[idx,:]
+
     
     # randomly select a subset of the data, to be used for creating synthethic samples
     if N < 100:

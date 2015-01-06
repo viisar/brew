@@ -1,3 +1,5 @@
+from __future__ import division
+
 import numpy as np
 
 import sklearn
@@ -12,6 +14,8 @@ from brew.generation import Bagging
 from brew.metrics.evaluation import auc_score
 from brew.metrics.diversity.paired import paired_metric_ensemble
 from brew.metrics.diversity.non_paired import entropy_measure_e
+
+from brew.preprocessing.smote import smote
 
 from .base import PoolGenerator
 
@@ -123,5 +127,76 @@ class AdaptiveBagging(PoolGenerator):
         out = self.ensemble.output(X)
         return self.combiner.combine(out)
 
+
+
+
+class SmoteAdaptiveBagging(AdaptiveBagging):
+    
+    def bootstrap_classifiers(self, X, y, K, pos_prob):
+
+        clfs = []
+        
+        for i in range(K):
+            mask = (self.positive_label == y)
+            negative_label = y[~mask][0]
+
+            majority_size = np.sum(~mask)
+            minority_size = len(mask) - majority_size
+            
+            # apply smote
+            N_smote = int(np.ceil(majority_size / minority_size) * 100 )
+
+            #print 'classifier: {}'.format(i)
+            #print '     maj size = {}'.format(majority_size)
+            #print '     min size = {}'.format(minority_size)
+            #print '     SMOTE:'
+            #print '         N_smote: {}'.format(N_smote)
+            #print '         T : {}'.format(X[mask].shape)
+            
+            X_syn = smote(X[mask],N=N_smote, k=5)
+            #print '         out : {}'.format(X_syn.shape)
+            y_syn = self.positive_label * np.ones((X_syn.shape[0],))
+
+            # use enough synthetic data to perfectly balance the binary problem
+            n_missing = majority_size - minority_size
+            #print n_missing
+            idx = np.random.choice(X_syn.shape[0], n_missing)
+            
+            # add synthetic data to original data
+            X_new = np.concatenate((X, X_syn[idx,]))
+            y_new = np.concatenate((y, y_syn[idx,]))
+
+
+    
+            # use new mask
+            mask = (self.positive_label == y_new)
+
+            # balance the classes
+
+            cX, cy = [], []
+            for j in range(X_new.shape[0]):
+                if np.random.random() < pos_prob:
+                    idx = np.random.random_integers(0, len(X_new[mask]) - 1)
+                    cX = cX + [X_new[mask][idx]]
+                    cy = cy + [self.positive_label]
+                else:
+                    idx = np.random.random_integers(0, len(X_new[~mask]) - 1)
+                    cX = cX + [X_new[~mask][idx]]
+                    cy = cy + [negative_label]
+            if not self.positive_label in cy:
+                idx_1 = np.random.random_integers(0, len(cX) - 1)
+                idx_2 = np.random.random_integers(0, len(X_new[mask])- 1)
+                cX[idx_1] = X_new[mask][idx_2]
+                cy[idx_1] = self.positive_label
+            elif not negative_label in cy:
+                idx_1 = np.random.random_integers(0, len(cX) - 1)
+                idx_2 = np.random.random_integers(0, len(X_new[~mask])- 1)
+                cX[idx_1] = X_new[~mask][idx_2]
+                cy[idx_1] = negative_label
+
+            clf = sklearn.base.clone(self.base_classifier)
+            clfs = clfs + [clf.fit(cX, cy)]
+
+        return clfs
 
 
