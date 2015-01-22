@@ -57,7 +57,15 @@ class Ensemble(object):
 
         return out
 
+    def in_agreement(self, x):
+        prev = None
+        for clf in self.classifiers:
+            tmp = clf.predict(x)
+            if tmp != prev:
+                return False
+            prev = tmp
 
+        return True
 
     def __len__(self):
         return len(self.classifiers)
@@ -65,21 +73,27 @@ class Ensemble(object):
 
 class EnsembleClassifier(object):
 
-    def __init__(self, ensemble=None, combiner=None):
+    def __init__(self, ensemble=None, combiner=None, selector=None):
         self.ensemble = ensemble
 
         if combiner == None:
             combiner = Combiner(rule='majority_vote')
         
         self.combiner = combiner
+        self.selector = selector
 
     def predict(self, X):
 
         # TODO: warn the user if mode of ensemble
         # output excludes the chosen combiner?
 
-        out = self.ensemble.output(X)
-        y = self.combiner.combine(out)
+        if self.selector == None:
+            out = self.ensemble.output(X)
+            y = self.combiner.combine(out)
+        else:
+            for x in X:
+                ensemble = self.selector.select(x, self.ensemble)
+            
 
         return y
 

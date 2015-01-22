@@ -25,8 +25,14 @@ class OLA(DCS):
 
 class OLA2(DCS):
 
-    def predict(self, X):
-        X_tst = np.array(X)
+    def select(self, x):
+        if self.in_agreement(x):
+
+        [k_idx] = self.knn.kneighbors(x, return_distance=False)
+        neighbors = idx
+        c_idxs = map(lambda e: np.argmax([clf.score(self.val_X[e], self.val_y[e]) for clf in self.classifiers]), X_idxs)
+        c_idxs = map(lambda e: np.argmax([cl
+        X_tst = np.array(x)
 
         X_idxs = self.knn.kneighbors(X_tst, return_distance=False)
         c_idxs = map(lambda e: np.argmax([clf.score(self.val_X[e], self.val_y[e]) for clf in self.classifiers]), X_idxs)
