@@ -26,15 +26,14 @@ class KNORA_E(KNORA):
 
     def select(self, ensemble, x):
         ensemble_mask = None
-        k = self.K
 
         neighbors_X, neighbors_y = self.get_neighbors(x)
         pool_output = ensemble.output_simple(neighbors_X)
 
         # gradually decrease neighborhood size if no
-        # classifier predicts all the neighbors correctly
-        for i in range(k,0,-1):
-            pool_mask = _get_pool_mask_all(pool_output[:i], neighbors_y[:i])
+        # classifier predicts ALL the neighbors correctly
+        for i in range(self.K, 0, -1):
+            pool_mask = _get_pool_mask(pool_output[:i], neighbors_y[:i], np.all)
 
             # if at least one classifier gets all neighbors right
             if pool_mask is not None:
@@ -45,11 +44,11 @@ class KNORA_E(KNORA):
         if ensemble_mask is None:
            
             # Increase neighborhood until one classifier
-            # gets at least ONE neighbor correctly. Starts
+            # gets at least ONE (i.e. ANY) neighbor correctly. Starts
             # with 2 because mask_all with k=1 is 
             # the same as mask_any with k=1
-            for i in range(2,k+1):
-                pool_mask = _get_pool_mask_any(pool_output[:i], neighbors_y[:i])
+            for i in range(2, self.K+1):
+                pool_mask = _get_pool_mask(pool_output[:i], neighbors_y[:i], np.any)
 
                 if pool_mask is not None:
                     ensemble_mask = pool_mask
@@ -77,20 +76,9 @@ class KNORA_U(KNORA):
         return Ensemble(classifiers=pool)
 
 
+def _get_pool_mask(pool_output, neighbors_target, func):
+    pool_mask = func(pool_output == neighbors_target[:,np.newaxis], axis=0)
 
-def _get_pool_mask_all(pool_output, neighbors_target):
-    pool_mask = np.all(pool_output == neighbors_target[:,np.newaxis], axis=0)
-
-    # if at least one classifier gets all the neighbors right, return mask
-    if np.sum(pool_mask) > 0:
-        return pool_mask
-
-    return None
-
-def _get_pool_mask_any(pool_output, neighbors_target):
-    pool_mask = np.any(pool_output == neighbors_target[:,np.newaxis], axis=0)
-
-    # if at least one classifier gets all the neighbors right, return mask
     if np.sum(pool_mask) > 0:
         return pool_mask
 
