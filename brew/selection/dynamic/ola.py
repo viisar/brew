@@ -1,42 +1,77 @@
 import numpy as np
 
-from sklearn.ensemble import BaggingClassifier
 from sklearn.lda import LDA
 from sklearn.decomposition import PCA
 from sklearn.neighbors.classification import KNeighborsClassifier
 
+from brew.base import Ensemble
 from .base import DCS
 
 class OLA(DCS):
 
-    def predict(self, X):
-        X_tst = np.array(X)
-        y_pred = []
-        for i in range(X_tst.shape[0]):
-            if self.in_agreement(X_tst[i]):
-                y_pred += [self.classifiers[0].predict(X_tst[i])]
-            else:
-                [idx] = self.knn.kneighbors(X_tst[i], return_distance=False)
-                scores = [clf.score(self.val_X[idx], self.val_y[idx]) for clf in self.classifiers]
-                clf = self.classifiers[np.argmax(scores)]
-                y_pred += [clf.predict(X_tst[i])]
+    def select(self, ensemble, x):
+        if ensemble.in_agreement(x):
+            return Ensemble([ensemble.classifiers[0]])
 
-        return np.array(y_pred)
+        # intialize variables
+        # the the indexes of the KNN of x
+        classifiers = ensemble.classifiers
+        [idx] = self.knn.kneighbors(x, return_distance=False)
+        X, y = self.Xval[idx], self.yval[idx]
+
+
+        # d[score] = indexes of the classifiers with that score
+        d = {}
+        scores = [clf.score(X, y) for clf in ensemble.classifiers]
+        for i, scr in enumerate(scores):
+            d[scr] = d[scr] + [i] if scr in d else [i]
+        best_scores = sorted([k for k in d.iterkeys()], reverse=True)
+
+        # if there was a single best classifier, return it
+        if len(d[best_scores[0]]) == 1:
+            print 'single best'
+            i = d[best_scores[0]][0]
+            return Ensemble([classifiers[i]])
+
+        print 'not single best'
+
+        options = None
+        for j, score in enumerate(best_scores):
+            pred = [classifiers[i].predict(x) for i in d[score]]
+            pred = np.asarray(pred).flatten()
+
+            bincount = np.bincount(pred)
+            if options != None:
+                for i in range(len(bincount)):
+                    bincount[i] = bincount[i] if i in options else 0
+
+            imx = np.argmax(bincount)
+            votes = np.argwhere(bincount == bincount[imx]).flatten()
+            count = len(votes)
+            if count == 1:
+                return Ensemble([classifiers[np.argmax(pred == imx)]])
+            elif options == None:
+                options = votes
+
+        return Ensemble([classifiers[np.argmax(scores)]])
+
 
 class OLA2(DCS):
+    def select(self, ensemble, x):
+        if ensemble.in_agreement(x):
+            return Ensemble([ensemble.classifiers[0]])
 
-    def select(self, x):
-        if self.in_agreement(x):
+        # intialize variables
+        # the the indexes of the KNN of x
+        classifiers = ensemble.classifiers
+        [idx] = self.knn.kneighbors(x, return_distance=False)
+        X, y = self.Xval[idx], self.yval[idx]
 
-        [k_idx] = self.knn.kneighbors(x, return_distance=False)
-        neighbors = idx
-        c_idxs = map(lambda e: np.argmax([clf.score(self.val_X[e], self.val_y[e]) for clf in self.classifiers]), X_idxs)
-        c_idxs = map(lambda e: np.argmax([cl
-        X_tst = np.array(x)
+        scores = np.asarray([clf.score(X, y) for clf in classifiers])
 
-        X_idxs = self.knn.kneighbors(X_tst, return_distance=False)
-        c_idxs = map(lambda e: np.argmax([clf.score(self.val_X[e], self.val_y[e]) for clf in self.classifiers]), X_idxs)
-        y_pred = [self.classifiers[idx].predict(X_tst[i]) for (idx, i) in zip(c_idxs, range(X_tst.shape[0]))]
+        return Ensemble([classifiers[np.argmax(scores)]])
 
-        return np.asarray(y_pred)
+
+
+
 

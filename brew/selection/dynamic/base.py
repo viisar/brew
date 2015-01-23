@@ -9,8 +9,10 @@ from brew.base import EnsembleClassifier
 
 class DCS(EnsembleClassifier):
 
-    def select(self, x, ensemble):
-        pass
+    def select(self, ensemble, x):
+        new_ensemble = Ensemble(ensemble.classifiers)
+        return new_ensemble, None
+
 
     def __init__(self, Xval, yval, K=5):
         self.Xval = Xval
