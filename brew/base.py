@@ -57,6 +57,14 @@ class Ensemble(object):
 
         return out
 
+    def output_simple(self, X):
+        out = np.zeros((X.shape[0], len(self.classifiers)))
+        for i, clf in enumerate(self.classifiers):
+            out[:,i] = clf.predict(X)
+
+        return out
+
+
     def in_agreement(self, x):
         prev = None
         for clf in self.classifiers:
