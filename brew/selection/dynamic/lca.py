@@ -1,10 +1,10 @@
 import numpy as np
 
-from sklearn.ensemble import BaggingClassifier
 from sklearn.lda import LDA
 from sklearn.decomposition import PCA
 from sklearn.neighbors.classification import KNeighborsClassifier
 
+from brew.base import Ensemble
 from .base import DCS
 
 class LCA(DCS):
@@ -33,4 +33,24 @@ class LCA(DCS):
                 y_pred += [self.classifiers[mx_id].predict(X_tst[i])]
 
         return np.array(y_pred)
+
+
+def LCA2(DCS):
+    def select(self, ensemble, x):
+        if ensemble.in_agreement(x):
+            return Ensemble([ensemble.classifiers[0]])
+
+        classifiers = ensemble.classifiers
+        [idx] = self.knn.kneighbors(x, return_distance=False)
+        X, y = self.Xval[idx], self.yval[idx]
+
+        
+
+
+
+
+
+
+
+
 
