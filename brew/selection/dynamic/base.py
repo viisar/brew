@@ -5,11 +5,9 @@ from sklearn.lda import LDA
 from sklearn.decomposition import PCA
 from sklearn.neighbors.classification import KNeighborsClassifier
 
-from brew.base import EnsembleClassifier
+class DCS(object):
 
-class DCS(EnsembleClassifier):
-
-    def select(self, x, ensemble):
+    def select(self, ensemble, x):
         pass
 
     def __init__(self, Xval, yval, K=5):
