@@ -19,7 +19,6 @@ class OLA(DCS):
         [idx] = self.knn.kneighbors(x, return_distance=False)
         X, y = self.Xval[idx], self.yval[idx]
 
-
         # d[score] = indexes of the classifiers with that score
         d = {}
         scores = [clf.score(X, y) for clf in ensemble.classifiers]
@@ -29,11 +28,8 @@ class OLA(DCS):
 
         # if there was a single best classifier, return it
         if len(d[best_scores[0]]) == 1:
-            print 'single best'
             i = d[best_scores[0]][0]
             return Ensemble([classifiers[i]])
-
-        print 'not single best'
 
         options = None
         for j, score in enumerate(best_scores):
