@@ -22,7 +22,7 @@ class KNORA(DCS):
         return X_nn, y_nn
 
     
-class KNORA_E(KNORA):
+class KNORA_ELIMINATE(KNORA):
 
     def select(self, ensemble, x):
         ensemble_mask = None
@@ -44,8 +44,8 @@ class KNORA_E(KNORA):
         if ensemble_mask is None:
            
             # Increase neighborhood until one classifier
-            # gets at least ONE (i.e. ANY) neighbor correctly. Starts
-            # with 2 because mask_all with k=1 is 
+            # gets at least ONE (i.e. ANY) neighbors correctly. 
+            # Starts with 2 because mask_all with k=1 is 
             # the same as mask_any with k=1
             for i in range(2, self.K+1):
                 pool_mask = _get_pool_mask(pool_output[:i], neighbors_y[:i], np.any)
@@ -55,25 +55,37 @@ class KNORA_E(KNORA):
                     break
 
         [selected_idx] = np.where(ensemble_mask)
+
+        print(ensemble_mask)
+
         pool = [ensemble.classifiers[i] for i in selected_idx]
 
         return Ensemble(classifiers=pool)
 
 
-class KNORA_U(KNORA):
+class KNORA_UNION(KNORA):
 
     def select(self, ensemble, x):
-        
         neighbors_X, neighbors_y = self.get_neighbors(x)
         pool_output = ensemble.output_simple(neighbors_X)
 
         output_mask = (pool_output == neighbors_y[:,np.newaxis])
+
         [selected_idx] = np.where(np.any(output_mask, axis=0))
-        weights = np.sum(output_mask, axis=0)[selected_idx]
-        
+
+        print(output_mask[:,selected_idx])
+       
+        if self.weighted:
+            weights = np.sqrt(np.sum((x - neighbors_X)**2, axis=1))
+            weighted_votes = np.dot(weights, output_mask[:,selected_idx])
+        else:
+            weighted_votes = np.sum(output_mask[:,selected_idx], axis=0)
+              
         pool = [ensemble.classifiers[i] for i in selected_idx]
 
-        return Ensemble(classifiers=pool)
+        assert len(pool) == weighted_votes.size
+
+        return Ensemble(classifiers=pool, weights=weighted_votes)
 
 
 def _get_pool_mask(pool_output, neighbors_target, func):
@@ -83,6 +95,3 @@ def _get_pool_mask(pool_output, neighbors_target, func):
         return pool_mask
 
     return None
-
-
-

@@ -81,7 +81,7 @@ class Ensemble(object):
 
 class EnsembleClassifier(object):
 
-    def __init__(self, ensemble=None, combiner=None, selector=None):
+    def __init__(self, ensemble=None, selector=None, combiner=None):
         self.ensemble = ensemble
 
         if combiner == None:
@@ -100,7 +100,7 @@ class EnsembleClassifier(object):
             y = self.combiner.combine(out)
         else:
             for x in X:
-                ensemble = self.selector.select(x, self.ensemble)
+                ensemble = self.selector.select(self.ensemble, x, )
             
 
         return y
