@@ -1,17 +1,22 @@
 import numpy as np
 
-def kuncheva_entropy_measure(ensemble, X, y):
-    out = ensemble.output(X, mode='labels')
-    oracle = np.equal(out, y[:,np.newaxis])
-
-    L = len(ensemble)
+def kuncheva_entropy_measure(oracle):
+    L = oracle.shape[1]
     tmp = np.sum(oracle, axis=1)
     tmp = np.minimum(tmp, L-tmp)
     
-    E = np.mean((1.0 / (L-np.ceil(0.5*L))) * tmp)
+    e = np.mean( (1.0/(L-np.ceil(0.5*L))) * tmp )
 
-    return E
+    return e
 
+def kuncheva_kw(oracle):
+    L = oracle.shape[1];
+    tmp = np.sum(oracle, axis=1)
+    tmp = np.multiply(tmp, L-tmp)
+
+    kw = np.mean( (1.0/(L**2)) * tmp )
+
+    return kw
 
 def new_entropy(ensemble, X, y):
     out = ensemble.output(X)
