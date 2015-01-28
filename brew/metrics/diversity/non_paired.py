@@ -2,7 +2,6 @@ import numpy as np
 
 def entropy_measure_e(ensemble, X, y):
     factor = 0
-    print len(ensemble)
     for j in range(y.shape[0]):
         right, wrong = 0, 0
         for estimator in ensemble.classifiers:

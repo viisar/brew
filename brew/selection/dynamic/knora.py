@@ -88,6 +88,52 @@ class KNORA_UNION(KNORA):
         return Ensemble(classifiers=pool, weights=weighted_votes)
 
 
+class KNORA_E_DB(KNORA):
+
+     def select(self, ensemble, x):
+        ensemble_mask = None
+
+        neighbors_X, neighbors_y = self.get_neighbors(x)
+        pool_output = ensemble.output_simple(neighbors_X)
+
+        if len(set(neighbors_y)) == 1:
+            knora_e = KNORA_ELIMINATE(self.Xval, self.yval, 
+                    K=self.K, weighted=False, knn=self.knn)
+            selection = knora_e.select(ensemble, x)
+            knora_e = None
+            return selection
+
+        # gradually decrease neighborhood size if no
+        # classifier predicts ALL the neighbors correctly
+        for i in range(self.K, 0, -1):
+            pool_mask = _get_pool_mask(pool_output[:i], neighbors_y[:i], np.all)
+
+            # if at least one classifier gets all neighbors right
+            if pool_mask is not None:
+                ensemble_mask = pool_mask
+                break
+
+        # if NO classifiers get the nearest neighbor correctly
+        if ensemble_mask is None:
+           
+            # Increase neighborhood until one classifier
+            # gets at least ONE (i.e. ANY) neighbors correctly. 
+            # Starts with 2 because mask_all with k=1 is 
+            # the same as mask_any with k=1
+            for i in range(2, self.K+1):
+                pool_mask = _get_pool_mask(pool_output[:i], neighbors_y[:i], np.any)
+
+                if pool_mask is not None:
+                    ensemble_mask = pool_mask
+                    break
+
+        [selected_idx] = np.where(ensemble_mask)
+
+        pool = [ensemble.classifiers[i] for i in selected_idx]
+
+        return Ensemble(classifiers=pool)
+
+
 def _get_pool_mask(pool_output, neighbors_target, func):
     pool_mask = func(pool_output == neighbors_target[:,np.newaxis], axis=0)
 
