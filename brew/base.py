@@ -94,12 +94,12 @@ class EnsembleClassifier(object):
 
     def __init__(self, ensemble=None, selector=None, combiner=None):
         self.ensemble = ensemble
-
+        self.selector = selector
+                
         if combiner == None:
             combiner = Combiner(rule='majority_vote')
-        
+
         self.combiner = combiner
-        self.selector = selector
 
     def predict(self, X):
 
@@ -110,15 +110,26 @@ class EnsembleClassifier(object):
             out = self.ensemble.output(X)
             y = self.combiner.combine(out)
 
+
         else:
-            for x in X:
-                ensemble, weights = self.selector.select(self.ensemble, x)
-                if weights: # use the ensemble with weights
-                    out = ensemble.output(x)
-                    print(out.shape)
+            y = []
+
+            for i in range(X.shape[0]):
+                ensemble, weights = self.selector.select(self.ensemble, X[i,:][np.newaxis,:])
+                    
+                if weights is not None: # use the ensemble with weights
+                    out = ensemble.output(X[i,:][np.newaxis,:])
+                    
+                    # apply weights
+                    for i in range(out.shape[2]):
+                        out[:,:,i] = out[:,:,i] * weights[i]
+
+                    [tmp] = self.combiner.combine(out)
+                    y.append(tmp)
                     
                 else: # use the ensemble, but ignore the weights
-                    out = ensemble.output(x) # maybe use output_simple
-                    y = self.combiner.combine(out)
+                    out = ensemble.output(X[i,:][np.newaxis,:])
+                    [tmp] = self.combiner.combine(out)
+                    y.append(tmp)
 
-        return y
+        return np.asarray(y)

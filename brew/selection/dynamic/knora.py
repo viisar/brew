@@ -28,7 +28,7 @@ class KNORA_ELIMINATE(KNORA):
         ensemble_mask = None
 
         neighbors_X, neighbors_y = self.get_neighbors(x)
-        pool_output = ensemble.output_simple(neighbors_X)
+        pool_output = ensemble.output(neighbors_X, mode='labels')
 
         # gradually decrease neighborhood size if no
         # classifier predicts ALL the neighbors correctly
@@ -56,40 +56,44 @@ class KNORA_ELIMINATE(KNORA):
 
         [selected_idx] = np.where(ensemble_mask)
 
-        print(ensemble_mask)
+        if selected_idx.size > 0:
+            pool = Ensemble(classifiers=[ensemble.classifiers[i] for i in selected_idx])
 
-        pool = [ensemble.classifiers[i] for i in selected_idx]
+        else: # use all classifiers
+            pool = ensemble
+
 
         # KNORA-ELIMINATE-W that supposedly uses weights, does not make
-        # any sense, so even if self.weighted is True, do nothing and
-        # return None as weight vector
+        # any sense, so even if self.weighted is True, always return
+        # None for the weights
 
-        return Ensemble(classifiers=pool), None
+        return pool, None
 
 
 class KNORA_UNION(KNORA):
 
     def select(self, ensemble, x):
         neighbors_X, neighbors_y = self.get_neighbors(x)
-        pool_output = ensemble.output_simple(neighbors_X)
+        pool_output = ensemble.output(neighbors_X, mode='labels')
 
         output_mask = (pool_output == neighbors_y[:,np.newaxis])
 
         [selected_idx] = np.where(np.any(output_mask, axis=0))
 
-        print(output_mask[:,selected_idx])
-       
-        if self.weighted:
-            weights = np.sqrt(np.sum((x - neighbors_X)**2, axis=1))
-            weighted_votes = np.dot(weights, output_mask[:,selected_idx])
-        else:
-            weighted_votes = np.sum(output_mask[:,selected_idx], axis=0)
-              
-        pool = [ensemble.classifiers[i] for i in selected_idx]
+        if selected_idx.size > 0:
+            if self.weighted:
+                weights = np.sqrt(np.sum((x - neighbors_X)**2, axis=1))
+                weighted_votes = np.dot(weights, output_mask[:,selected_idx])
+            else:
+                weighted_votes = np.sum(output_mask[:,selected_idx], axis=0)
+        
+            pool = Ensemble(classifiers=[ensemble.classifiers[i] for i in selected_idx])
 
-        assert len(pool) == weighted_votes.size
+        else: # if no classifiers are selected, use all classifiers with no weights
+            pool = ensemble
+            weighted_votes = None
 
-        return Ensemble(classifiers=pool), weighted_votes
+        return pool, weighted_votes
 
 
 def _get_pool_mask(pool_output, neighbors_target, func):
