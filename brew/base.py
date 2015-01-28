@@ -43,17 +43,28 @@ class Ensemble(object):
         self.classes_ = list(classes)
         return self.classes_
 
-    def output(self, X):
+    def output(self, X, mode='votes'):
 
-        # assumes that all classifiers were trained with the same number of classes
-        n_classes = len(self.get_classes())
+        if mode == 'labels':
+            out = np.zeros((X.shape[0], len(self.classifiers)))
+            for i, clf in enumerate(self.classifiers):
+                out[:,i] = clf.predict(X)
 
-        out = np.zeros((X.shape[0], n_classes, len(self.classifiers)))
+        else:
+            # assumes that all classifiers were
+            # trained with the same number of classes
+            n_classes = len(self.get_classes())
+            out = np.zeros((X.shape[0], n_classes, len(self.classifiers)))
 
-        for i, c in enumerate(self.classifiers):
-            tmp = c.predict(X) # (n_samples,)
-            votes = transform2votes(tmp, n_classes) # (n_samples, n_classes)
-            out[:,:,i] = votes
+            for i, c in enumerate(self.classifiers):
+                if mode == 'probs':
+                    tmp = c.predict_proba(X)
+                    out[:,:,i] = tmp
+
+                elif mode == 'votes':
+                    tmp = c.predict(X) # (n_samples,)
+                    votes = transform2votes(tmp, n_classes) # (n_samples, n_classes)
+                    out[:,:,i] = votes
 
         return out
 
@@ -98,11 +109,16 @@ class EnsembleClassifier(object):
         if self.selector == None:
             out = self.ensemble.output(X)
             y = self.combiner.combine(out)
+
         else:
             for x in X:
-                ensemble = self.selector.select(self.ensemble, x, )
-            
+                ensemble, weights = self.selector.select(self.ensemble, x)
+                if weights: # use the ensemble with weights
+                    out = ensemble.output(x)
+                    print(out.shape)
+                    
+                else: # use the ensemble, but ignore the weights
+                    out = ensemble.output(x) # maybe use output_simple
+                    y = self.combiner.combine(out)
 
         return y
-
-

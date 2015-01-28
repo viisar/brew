@@ -60,7 +60,11 @@ class KNORA_ELIMINATE(KNORA):
 
         pool = [ensemble.classifiers[i] for i in selected_idx]
 
-        return Ensemble(classifiers=pool)
+        # KNORA-ELIMINATE-W that supposedly uses weights, does not make
+        # any sense, so even if self.weighted is True, do nothing and
+        # return None as weight vector
+
+        return Ensemble(classifiers=pool), None
 
 
 class KNORA_UNION(KNORA):
@@ -85,7 +89,7 @@ class KNORA_UNION(KNORA):
 
         assert len(pool) == weighted_votes.size
 
-        return Ensemble(classifiers=pool, weights=weighted_votes)
+        return Ensemble(classifiers=pool), weighted_votes
 
 
 def _get_pool_mask(pool_output, neighbors_target, func):
