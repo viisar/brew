@@ -43,17 +43,28 @@ class Ensemble(object):
         self.classes_ = list(classes)
         return self.classes_
 
-    def output(self, X):
+    def output(self, X, mode='votes'):
 
-        # assumes that all classifiers were trained with the same number of classes
-        n_classes = len(self.get_classes())
+        if mode == 'labels':
+            out = np.zeros((X.shape[0], len(self.classifiers)))
+            for i, clf in enumerate(self.classifiers):
+                out[:,i] = clf.predict(X)
 
-        out = np.zeros((X.shape[0], n_classes, len(self.classifiers)))
+        else:
+            # assumes that all classifiers were
+            # trained with the same number of classes
+            n_classes = len(self.get_classes())
+            out = np.zeros((X.shape[0], n_classes, len(self.classifiers)))
 
-        for i, c in enumerate(self.classifiers):
-            tmp = c.predict(X) # (n_samples,)
-            votes = transform2votes(tmp, n_classes) # (n_samples, n_classes)
-            out[:,:,i] = votes
+            for i, c in enumerate(self.classifiers):
+                if mode == 'probs':
+                    tmp = c.predict_proba(X)
+                    out[:,:,i] = tmp
+
+                elif mode == 'votes':
+                    tmp = c.predict(X) # (n_samples,)
+                    votes = transform2votes(tmp, n_classes) # (n_samples, n_classes)
+                    out[:,:,i] = votes
 
         return out
 
@@ -83,12 +94,12 @@ class EnsembleClassifier(object):
 
     def __init__(self, ensemble=None, selector=None, combiner=None):
         self.ensemble = ensemble
-
+        self.selector = selector
+                
         if combiner == None:
             combiner = Combiner(rule='majority_vote')
-        
+
         self.combiner = combiner
-        self.selector = selector
 
     def predict(self, X):
 
@@ -98,11 +109,27 @@ class EnsembleClassifier(object):
         if self.selector == None:
             out = self.ensemble.output(X)
             y = self.combiner.combine(out)
+
+
         else:
-            for x in X:
-                ensemble = self.selector.select(self.ensemble, x, )
-            
+            y = []
 
-        return y
+            for i in range(X.shape[0]):
+                ensemble, weights = self.selector.select(self.ensemble, X[i,:][np.newaxis,:])
+                    
+                if weights is not None: # use the ensemble with weights
+                    out = ensemble.output(X[i,:][np.newaxis,:])
+                    
+                    # apply weights
+                    for i in range(out.shape[2]):
+                        out[:,:,i] = out[:,:,i] * weights[i]
 
+                    [tmp] = self.combiner.combine(out)
+                    y.append(tmp)
+                    
+                else: # use the ensemble, but ignore the weights
+                    out = ensemble.output(X[i,:][np.newaxis,:])
+                    [tmp] = self.combiner.combine(out)
+                    y.append(tmp)
 
+        return np.asarray(y)
