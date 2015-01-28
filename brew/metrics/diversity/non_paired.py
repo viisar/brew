@@ -1,8 +1,29 @@
 import numpy as np
 
+def kuncheva_entropy_measure(ensemble, X, y):
+    out = ensemble.output(X, mode='labels')
+    oracle = np.equal(out, y[:,np.newaxis])
+
+    L = len(ensemble)
+    tmp = np.sum(oracle, axis=1)
+    tmp = np.minimum(tmp, L-tmp)
+    
+    E = np.mean((1.0 / (L-np.ceil(0.5*L))) * tmp)
+
+    return E
+
+
+def new_entropy(ensemble, X, y):
+    out = ensemble.output(X)
+    P = np.sum(out, axis=2)/out.shape[1]
+    P = - P * np.log(P + 10e-8)
+    entropy = np.mean(np.sum(P, axis=1))
+
+    return entropy
+
 def entropy_measure_e(ensemble, X, y):
     factor = 0
-    print len(ensemble)
+
     for j in range(y.shape[0]):
         right, wrong = 0, 0
         for estimator in ensemble.classifiers:
