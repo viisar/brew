@@ -1,3 +1,7 @@
+"""
+See: 
+"""
+
 from __future__ import division
 
 import numpy as np
@@ -11,7 +15,8 @@ def smote(T, N=100, k=1):
     """
 
     # modification of original smote code so that it won't break if
-    # minority class is too small in relation to the k
+    # minority class is too small in relation to the k, maybe this is not
+    # sensible.
     if T.shape[0] <= k+1:
         idx = np.random.choice(T.shape[0], size=(k+1,))
         T = T[idx,:]
