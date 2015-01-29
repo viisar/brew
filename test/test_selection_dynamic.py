@@ -17,7 +17,7 @@ yval = np.random.randint(0,2,40)
 Xtst = np.random.random((30,2))
 ytst = np.random.randint(0,2,30)
 
-class TestKNORA():
+class TestKNORA_E():
 
     def test_simple(self):
         ensemble = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
@@ -29,3 +29,42 @@ class TestKNORA():
 
         print(pool)
         #print(pool)
+
+class TestKNORA_U():
+
+    def test_simple(self):
+        ensemble = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
+        ensemble.fit(Xtra, ytra)
+
+        selector = KNORA_ELIMINATE(Xval=Xval, yval=yval)
+
+        pool = selector.select(ensemble, Xtst[0])
+
+        print(pool)
+ 
+
+
+class TestKNORA_U():
+
+    def test_simple(self):
+        ensemble = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
+        ensemble.fit(Xtra, ytra)
+
+        selector = KNORA_UNION(Xval=Xval, yval=yval)
+
+        pool = selector.select(ensemble, Xtst[0])
+
+        print(pool)
+ 
+class TestKNORA_DB():
+
+    def test_simple(self):
+        ensemble = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
+        ensemble.fit(Xtra, ytra)
+
+        selector = KNORA_E_DB(Xval=Xval, yval=yval)
+
+        pool = selector.select(ensemble, Xtst[0])
+
+        print(pool)
+ 

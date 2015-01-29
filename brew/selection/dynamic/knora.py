@@ -107,33 +107,55 @@ class KNORA_E_DB(KNORA):
         if len(set(neighbors_y)) == 1:
             knora_e = KNORA_ELIMINATE(self.Xval, self.yval, 
                     K=self.K, weighted=False, knn=self.knn)
-            selection = knora_e.select(ensemble, x)
+            selection, weights = knora_e.select(ensemble, x)
             knora_e = None
-            return selection
+            return selection, weights
 
-        # gradually decrease neighborhood size if no
-        # classifier predicts ALL the neighbors correctly
-        for i in range(self.K, 0, -1):
-            pool_mask = _get_pool_mask(pool_output[:i], neighbors_y[:i], np.all)
 
-            # if at least one classifier gets all neighbors right
-            if pool_mask is not None:
-                ensemble_mask = pool_mask
-                break
+        pool_mask = _get_pool_mask(pool_output, neighbors_y, np.all)
+        neighborhood_mask = np.ones(neighbors_y.shape[0], dtype=bool)
+        if pool_mask is not None:
+            ensemble_mask = pool_mask
+        else:
+            # gradually decrease neighborhood size if no
+            # classifier predicts ALL the neighbors correctly
+            i = self.K - 1
+            while i >= 0:
+                neighborhood_mask[i] = False
+                if set(neighbors_y[neighborhood_mask]) != set(neighborhood_mask):
+                    neighborhood_mask[i] = True
+                else:
+                    pool_mask = _get_pool_mask(pool_output[neighborhood_mask], 
+                            neighbors_y[neighborhood_mask], np.all)
+                    # if at least one classifier gets all neighbors right
+                    if pool_mask is not None:
+                        ensemble_mask = pool_mask
+                        i = 0
+
+                i = i - 1
 
         # if NO classifiers get the nearest neighbor correctly
         if ensemble_mask is None:
-           
             # Increase neighborhood until one classifier
             # gets at least ONE (i.e. ANY) neighbors correctly. 
             # Starts with 2 because mask_all with k=1 is 
             # the same as mask_any with k=1
-            for i in range(2, self.K+1):
-                pool_mask = _get_pool_mask(pool_output[:i], neighbors_y[:i], np.any)
+            labels = set(neighbors_y)
+            pool_mask = np.zeros(pool_output.shape[1])
+            for i in range(-1, self.K+1):
+                if i == -1 or neighborhood_mask[i] == False: 
+                    neighborhood_mask[i] = True
 
-                if pool_mask is not None:
-                    ensemble_mask = pool_mask
-                    break
+                    for lbl in labels:
+                        lbl_mask = (neighbors_y == lbl) * neighborhood_mask
+                        tmp = _get_pool_mask(pool_output[lbl_mask], neighbors_y[lbl_mask], np.any)
+                        tmp = 0 if tmp == None else tmp
+                        pool_mask = pool_mask + tmp
+
+                    pool_mask = pool_mask > 1
+                    if np.any(pool_mask):
+                        ensemble_mask = pool_mask
+                        break
 
         [selected_idx] = np.where(ensemble_mask)
 
