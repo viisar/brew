@@ -28,7 +28,6 @@ def new_entropy(ensemble, X, y):
 
 def entropy_measure_e(ensemble, X, y):
     factor = 0
-
     for j in range(y.shape[0]):
         right, wrong = 0, 0
         for estimator in ensemble.classifiers:
