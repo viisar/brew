@@ -82,7 +82,7 @@ class KNORA_UNION(KNORA):
 
         if selected_idx.size > 0:
             if self.weighted:
-                weights = 1.0/np.sqrt(np.sum((x - neighbors_X)**2, axis=1))
+                weights = 1.0/(np.sqrt(np.sum((x - neighbors_X)**2, axis=1)) + 10e-8)
                 weighted_votes = np.dot(weights, output_mask[:,selected_idx])
             else:
                 weighted_votes = np.sum(output_mask[:,selected_idx], axis=0)
@@ -118,7 +118,7 @@ class KNORA_DB_U(KNORA):
 
         if selected_idx.size > 0:
             if self.weighted:
-                weights = 1.0/np.sqrt(np.sum((x - neighbors_X)**2, axis=1))
+                weights = 1.0/(np.sqrt(np.sum((x - neighbors_X)**2, axis=1)) + 10e-8)
                 weighted_votes = np.dot(weights, output_mask[:,selected_idx])
             else:
                 weighted_votes = np.sum(output_mask[:,selected_idx], axis=0)
@@ -171,6 +171,12 @@ class KNORA_DB_E(KNORA):
                         i = 0
 
                 i = i - 1
+
+        #TODO evaluate if this is a etter option
+        knora_u = KNORA_DB_U(self.Xval, self.yval, K=self.K, knn=self.knn)
+        selection, weights = knora_u.select(ensemble, x)
+        knora_e = None
+        return selection, weights
 
         # if NO classifiers get the nearest neighbor correctly
         if ensemble_mask is None:
