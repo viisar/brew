@@ -6,7 +6,7 @@ from .base import DCS
 class LCA(DCS):
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):
-            return Ensemble([ensemble.classifiers[0]])
+            return Ensemble([ensemble.classifiers[0]]), None
 
         # obtain the K nearest neighbors in the validation set
         [idx] = self.knn.kneighbors(x, return_distance=False)
@@ -47,18 +47,18 @@ class LCA(DCS):
             votes = np.argwhere(bincount == bincount[imx]).flatten()
             count = len(votes)
             if count == 1:
-                return Ensemble([ensemble.classifiers[np.argmax(pred == imx)]])
+                return Ensemble([ensemble.classifiers[np.argmax(pred == imx)]]), None
             elif options == None:
                 options = votes
 
-        return Ensemble([ensemble.classifiers[np.argmax(scores)]])
+        return Ensemble([ensemble.classifiers[np.argmax(scores)]]), None
 
 
 class LCA2(DCS):
 
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):
-            return Ensemble([ensemble.classifiers[0]])
+            return Ensemble([ensemble.classifiers[0]]), None
 
         # obtain the K nearest neighbors in the validation set
         [idx] = self.knn.kneighbors(x, return_distance=False)
@@ -81,18 +81,5 @@ class LCA2(DCS):
             mask = (pool_output[:,j] == x_outputs[j]) * mask
             scores[j] = sum(mask)
             
-        return Ensemble([ensemble.classifiers[np.argmax(scores)]])
+        return Ensemble([ensemble.classifiers[np.argmax(scores)]]), None
         
-
-        
-
-        
-
-
-
-
-
-
-
-
-

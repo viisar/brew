@@ -114,7 +114,7 @@ class KNORA_DB_U(KNORA):
             tmp = 0 if tmp == None else tmp
             ensemble_mask = ensemble_mask * tmp
 
-        [selected_idx] = np.where(ensemble_mask, axis=0) 
+        [selected_idx] = np.where(ensemble_mask)
 
         if selected_idx.size > 0:
             if self.weighted:
@@ -180,7 +180,7 @@ class KNORA_DB_E(KNORA):
             # the same as mask_any with k=1
             labels = set(neighbors_y)
             pool_mask = np.zeros(pool_output.shape[1])
-            for i in range(-1, self.K+1):
+            for i in range(-1, self.K):
                 if i != -1 and neighborhood_mask[i] == False: 
                     neighborhood_mask[i] = True
 

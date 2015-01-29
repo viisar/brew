@@ -34,39 +34,30 @@ bag = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
 bag.fit(Xtra, ytra)
 
 class TestKNORA_E():
-
     def test_simple(self):
         selector = KNORA_ELIMINATE(Xval=Xval, yval=yval)
         for x in Xtst:
-            pool, w = selector.select(bag.ensemble, Xtst)
+            pool, w = selector.select(bag.ensemble, x)
 
 
 class TestKNORA_U():
 
     def test_simple(self):
-        selector = KNORA_ELIMINATE(Xval=Xval, yval=yval)
+        selector = KNORA_UNION(Xval=Xval, yval=yval)
         for x in Xtst:
-            pool, w = selector.select(bag.ensemble, Xtst)
-        
-class TestKNORA_U():
-
-    def test_simple(self):
-        selector = KNORA_ELIMINATE(Xval=Xval, yval=yval)
-        for x in Xtst:
-            pool, w = selector.select(bag.ensemble, Xtst)
-
-
+            pool, w = selector.select(bag.ensemble, x)
+       
 class TestKNORA_DB_U():
 
     def test_simple(self):
         selector = KNORA_DB_U(Xval=Xval, yval=yval)
         for x in Xtst:
-            pool, w = selector.select(bag.ensemble, Xtst)
+            pool, w = selector.select(bag.ensemble, x)
  
 class TestKNORA_DB_E():
 
     def test_simple(self):
         selector = KNORA_DB_E(Xval=Xval, yval=yval)
         for x in Xtst:
-            pool, w = selector.select(bag.ensemble, Xtst)
+            pool, w = selector.select(bag.ensemble, x)
  

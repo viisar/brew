@@ -2,8 +2,10 @@ from brew.selection.dynamic.ola import OLA
 from brew.selection.dynamic.ola import OLA2
 from brew.selection.dynamic.lca import LCA
 from brew.selection.dynamic.lca import LCA2
+from brew.selection.dynamic.knora import *
 
 from brew.generation.bagging import Bagging
+from brew.base import EnsembleClassifier
 
 import numpy as np
 
@@ -26,16 +28,18 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 bag = Bagging(base_classifier=dt, n_classifiers=10)
 bag.fit(X_val, y_val)
 
-dcs_list = [OLA(X_val, y_val), OLA2(X_val, y_val), LCA(X_val, y_val), LCA2(X_val, y_val)]
+
+dcs_list = [OLA(X_val, y_val),
+            LCA(X_val, y_val),
+            KNORA_ELIMINATE(X_val, y_val), KNORA_UNION(X_val, y_val),
+            KNORA_DB_U(X_val, y_val), KNORA_DB_E(X_val, y_val)]
+
+dcs_names = ['ola', 'lca', 'KE', 'KU', 'KDBU', 'KDBE']
 
 
-for dcs in dcs_list:
-    y_pred = []
-    for i in range(X_test.shape[0]):
-        clf = dcs.select(bag.ensemble, X_test[i]).classifiers[0]
-        y_pred = y_pred + [clf.predict(X_test[i])]
-
-    print '------------------------------------------------'
-    print zero_one_loss(y_pred, y_test)
-
-
+print '------------------------------------------------'
+for dcs, name in zip(dcs_list, dcs_names):
+    mcs = EnsembleClassifier(bag.ensemble, selector=dcs)
+    y_pred = mcs.predict(X_test)
+    print name, zero_one_loss(y_pred, y_test)
+print '------------------------------------------------'
