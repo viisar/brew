@@ -10,11 +10,16 @@ class DCS(object):
     def select(self, ensemble, x):
         pass
 
-    def __init__(self, Xval, yval, K=5, weighted=False):
+    def __init__(self, Xval, yval, K=5, weighted=False, knn=None):
         self.Xval = Xval
         self.yval = yval
         self.K = K
-        self.knn = KNeighborsClassifier(n_neighbors=K, algorithm='brute')
+
+        if knn == None:
+            self.knn = KNeighborsClassifier(n_neighbors=K, algorithm='brute')
+        else:
+            self.knn = knn
+
         self.knn.fit(Xval, yval)
         self.weighted = weighted
 
