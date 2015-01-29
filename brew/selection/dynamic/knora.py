@@ -82,7 +82,7 @@ class KNORA_UNION(KNORA):
 
         if selected_idx.size > 0:
             if self.weighted:
-                weights = np.sqrt(np.sum((x - neighbors_X)**2, axis=1))
+                weights = 1.0/np.sqrt(np.sum((x - neighbors_X)**2, axis=1))
                 weighted_votes = np.dot(weights, output_mask[:,selected_idx])
             else:
                 weighted_votes = np.sum(output_mask[:,selected_idx], axis=0)
@@ -96,21 +96,58 @@ class KNORA_UNION(KNORA):
         return pool, weighted_votes
 
 
-class KNORA_E_DB(KNORA):
+class KNORA_DB_U(KNORA):
+    def select(self, ensemble, x):
+        neighbors_X, neighbors_y = self.get_neighbors(x)
+        pool_output = ensemble.output(neighbors_X, mode='labels')
+
+        output_mask = (pool_output == neighbors_y[:,np.newaxis])
+
+        ensemble_mask = np.ones(len(ensemble), dtype=bool)
+
+        
+        for lbl in set(neighbors_y):
+            np.multiply(pool_output == lbl, output_mask)
+            lbl_mask = (neighbors_y == lbl)
+
+            tmp = _get_pool_mask(output_mask[lbl_mask], neighbors_y[lbl_mask], np.any)
+            tmp = 0 if tmp == None else tmp
+            ensemble_mask = ensemble_mask * tmp
+
+        [selected_idx] = np.where(ensemble_mask, axis=0) 
+
+        if selected_idx.size > 0:
+            if self.weighted:
+                weights = 1.0/np.sqrt(np.sum((x - neighbors_X)**2, axis=1))
+                weighted_votes = np.dot(weights, output_mask[:,selected_idx])
+            else:
+                weighted_votes = np.sum(output_mask[:,selected_idx], axis=0)
+        
+            pool = Ensemble(classifiers=[ensemble.classifiers[i] for i in selected_idx])
+
+        else: # if no classifiers are selected, use all classifiers with no weights
+            pool = ensemble
+            weighted_votes = None
+
+        return pool, weighted_votes
+
+
+class KNORA_DB_E(KNORA):
 
      def select(self, ensemble, x):
         ensemble_mask = None
 
         neighbors_X, neighbors_y = self.get_neighbors(x)
-        pool_output = ensemble.output_simple(neighbors_X)
+        # pool_output (instances, classifiers)
+        pool_output = ensemble.output(neighbors_X, mode='labels')
 
+        # check if x is a center of class region
         if len(set(neighbors_y)) == 1:
             knora_e = KNORA_ELIMINATE(self.Xval, self.yval, 
                     K=self.K, weighted=False, knn=self.knn)
             selection, weights = knora_e.select(ensemble, x)
             knora_e = None
             return selection, weights
-
 
         pool_mask = _get_pool_mask(pool_output, neighbors_y, np.all)
         neighborhood_mask = np.ones(neighbors_y.shape[0], dtype=bool)
@@ -119,10 +156,11 @@ class KNORA_E_DB(KNORA):
         else:
             # gradually decrease neighborhood size if no
             # classifier predicts ALL the neighbors correctly
+            # maintaining the decision region
             i = self.K - 1
             while i >= 0:
                 neighborhood_mask[i] = False
-                if set(neighbors_y[neighborhood_mask]) != set(neighborhood_mask):
+                if set(neighbors_y[neighborhood_mask]) != set(neighbors_y):
                     neighborhood_mask[i] = True
                 else:
                     pool_mask = _get_pool_mask(pool_output[neighborhood_mask], 
@@ -143,7 +181,7 @@ class KNORA_E_DB(KNORA):
             labels = set(neighbors_y)
             pool_mask = np.zeros(pool_output.shape[1])
             for i in range(-1, self.K+1):
-                if i == -1 or neighborhood_mask[i] == False: 
+                if i != -1 and neighborhood_mask[i] == False: 
                     neighborhood_mask[i] = True
 
                     for lbl in labels:
@@ -159,9 +197,12 @@ class KNORA_E_DB(KNORA):
 
         [selected_idx] = np.where(ensemble_mask)
 
-        pool = [ensemble.classifiers[i] for i in selected_idx]
+        if selected_idx.size > 0:
+            pool = Ensemble(classifiers=[ensemble.classifiers[i] for i in selected_idx])
+        else:
+            pool = ensemble
 
-        return Ensemble(classifiers=pool)
+        return pool, None
 
 
 def _get_pool_mask(pool_output, neighbors_target, func):

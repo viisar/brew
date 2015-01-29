@@ -9,9 +9,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import zero_one_loss
 from sklearn.cross_validation import train_test_split
 
-
-
-
 from brew.base import Ensemble
 from brew.generation.bagging import *
 from brew.selection.dynamic.knora import *
@@ -33,59 +30,43 @@ for i, yi in enumerate(set(y)):
 Xtra, Xtst, ytra, ytst = train_test_split(X, y, test_size=0.10)
 Xtra, Xval, ytra, yval = train_test_split(Xtra, ytra, test_size=0.30)
 
+bag = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
+bag.fit(Xtra, ytra)
 
 class TestKNORA_E():
 
     def test_simple(self):
-        ensemble = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
-        ensemble.fit(Xtra, ytra)
-
         selector = KNORA_ELIMINATE(Xval=Xval, yval=yval)
-
         for x in Xtst:
-            pool, w = selector.select(ensemble.ensemble, Xtst)
-
-        print(pool)
-        #print(pool)
-
-class TestKNORA_U():
-
-    def test_simple(self):
-        ensemble = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
-        ensemble.fit(Xtra, ytra)
-
-        selector = KNORA_ELIMINATE(Xval=Xval, yval=yval)
-
-        for x in Xtst:
-            pool, w = selector.select(ensemble.ensemble, Xtst)
-
-        print(pool)
- 
+            pool, w = selector.select(bag.ensemble, Xtst)
 
 
 class TestKNORA_U():
 
     def test_simple(self):
-        ensemble = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
-        ensemble.fit(Xtra, ytra)
-
-        selector = KNORA_UNION(Xval=Xval, yval=yval)
-
+        selector = KNORA_ELIMINATE(Xval=Xval, yval=yval)
         for x in Xtst:
-            pool, w = selector.select(ensemble.ensemble, Xtst)
-
-        print(pool)
- 
-class TestKNORA_DB():
+            pool, w = selector.select(bag.ensemble, Xtst)
+        
+class TestKNORA_U():
 
     def test_simple(self):
-        ensemble = Bagging(base_classifier=DecisionTreeClassifier(), n_classifiers=5)
-        ensemble.fit(Xtra, ytra)
-
-        selector = KNORA_E_DB(Xval=Xval, yval=yval)
-
+        selector = KNORA_ELIMINATE(Xval=Xval, yval=yval)
         for x in Xtst:
-            pool, w = selector.select(ensemble.ensemble, Xtst)
+            pool, w = selector.select(bag.ensemble, Xtst)
 
-        print(pool)
+
+class TestKNORA_DB_U():
+
+    def test_simple(self):
+        selector = KNORA_DB_U(Xval=Xval, yval=yval)
+        for x in Xtst:
+            pool, w = selector.select(bag.ensemble, Xtst)
+ 
+class TestKNORA_DB_E():
+
+    def test_simple(self):
+        selector = KNORA_DB_E(Xval=Xval, yval=yval)
+        for x in Xtst:
+            pool, w = selector.select(bag.ensemble, Xtst)
  
