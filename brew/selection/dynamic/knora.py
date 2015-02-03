@@ -134,15 +134,36 @@ class KNORA_DB_U(KNORA):
 
 class KNORA_DB_E(KNORA):
 
-     def select(self, ensemble, x):
-        ensemble_mask = None
+    def is_indecision_region(self, x, ensemble, alpha=0.2):
+        [dists], [idx] = self.knn.kneighbors(x, return_distance=True)
+        y_nn = self.yval[idx] # k neighbors target
 
+        if len(set(y_nn)) == 1:
+            return False
+
+        d = {}
+        for i, dist in zip(y_nn, dists):
+            d[i] = d[i] + dist if i in d else dist
+
+        dist_lcl = sorted([float(d[k]) / np.sum(y_nn==k) for k in d.keys()], reverse=True)
+        dist_sum = float(sum([v for (k, v) in d.items()]))
+        if (max(dist_lcl)/dist_sum * alpha) >= (max(dist_lcl[1:])):
+            return False
+
+        return True
+         
+
+
+    def select(self, ensemble, x):
+        ensemble_mask = None
+        
         neighbors_X, neighbors_y = self.get_neighbors(x)
         # pool_output (instances, classifiers)
         pool_output = ensemble.output(neighbors_X, mode='labels')
 
-        # check if x is a center of class region
-        if len(set(neighbors_y)) == 1:
+
+        #if len(set(neighbors_y)) == 1:
+        if self.is_indecision_region(x, ensemble):
             knora_e = KNORA_ELIMINATE(self.Xval, self.yval, 
                     K=self.K, weighted=False, knn=self.knn)
             selection, weights = knora_e.select(ensemble, x)
