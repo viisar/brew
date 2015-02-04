@@ -7,7 +7,7 @@ class OLA(DCS):
 
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):
-            return Ensemble([ensemble.classifiers[0]])
+            return Ensemble([ensemble.classifiers[0]]), None
 
         # intialize variables
         # the the indexes of the KNN of x
@@ -25,7 +25,7 @@ class OLA(DCS):
         # if there was a single best classifier, return it
         if len(d[best_scores[0]]) == 1:
             i = d[best_scores[0]][0]
-            return Ensemble([classifiers[i]])
+            return Ensemble([classifiers[i]]), None
 
         options = None
         for j, score in enumerate(best_scores):
@@ -41,17 +41,17 @@ class OLA(DCS):
             votes = np.argwhere(bincount == bincount[imx]).flatten()
             count = len(votes)
             if count == 1:
-                return Ensemble([classifiers[np.argmax(pred == imx)]])
+                return Ensemble([classifiers[np.argmax(pred == imx)]]), None
             elif options == None:
                 options = votes
 
-        return Ensemble([classifiers[np.argmax(scores)]])
+        return Ensemble([classifiers[np.argmax(scores)]]), None
 
 
 class OLA2(DCS):
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):
-            return Ensemble([ensemble.classifiers[0]])
+            return Ensemble([ensemble.classifiers[0]]), None
 
         # intialize variables
         # the the indexes of the KNN of x
@@ -61,7 +61,7 @@ class OLA2(DCS):
 
         scores = np.asarray([clf.score(X, y) for clf in classifiers])
 
-        return Ensemble([classifiers[np.argmax(scores)]])
+        return Ensemble([classifiers[np.argmax(scores)]]), None
 
 
 

@@ -127,7 +127,7 @@ class KNORA_UNION(KNORA):
 
         if selected_idx.size > 0:
             if self.weighted:
-                weights = 1.0/np.sqrt(np.sum((x - neighbors_X)**2, axis=1))
+                weights = 1.0/(np.sqrt(np.sum((x - neighbors_X)**2, axis=1)) + 10e-8)
                 weighted_votes = np.dot(weights, output_mask[:,selected_idx])
             else:
                 weighted_votes = np.sum(output_mask[:,selected_idx], axis=0)
