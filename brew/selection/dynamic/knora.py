@@ -70,6 +70,51 @@ class KNORA_ELIMINATE(KNORA):
         return pool, None
 
 
+class KNORA_ELIMINATE_2(KNORA):
+    def select(self, ensemble, x):
+        neighbors_X, neighbors_y = self.get_neighbors(x)
+
+        k = self.K
+
+        pool = []
+        while k > 0:
+            nn_X = neighbors_X[:k,:]
+            nn_y = neighbors_y[:k]
+
+            for i, c in enumerate(ensemble.classifiers):
+                if np.all(c.predict(nn_X) == nn_y[np.newaxis, :]):
+                    pool.append(c)
+
+            if not pool: # empty
+                k = k-1
+            else:
+                break
+
+        if not pool: # still empty
+            # select the classifier that recognizes
+            # more samples in the whole neighborhood
+            # also select classifiers that recognize
+            # the same number of neighbors
+            pool = self._get_best_classifiers(ensemble, neighbors_X, neighbors_y, x)
+
+
+        return Ensemble(classifiers=pool), None
+
+
+    def _get_best_classifiers(self, ensemble, neighbors_X, neighbors_y, x):
+        ensemble_out = ensemble.output(neighbors_X, mode='labels')
+        ensemble_mask = ensemble_out == neighbors_y[:,np.newaxis]
+
+        correct = np.sum(ensemble_mask, axis=0)
+        idx = np.argmax(correct) # best classifier idx
+
+        all_idx = correct == correct[idx]
+        
+        pool = [ensemble.classifiers[i] for i in all_idx]
+
+        return pool
+
+
 class KNORA_UNION(KNORA):
 
     def select(self, ensemble, x):
@@ -94,6 +139,25 @@ class KNORA_UNION(KNORA):
             weighted_votes = None
 
         return pool, weighted_votes
+
+class KNORA_UNION_2(KNORA):
+    
+    def select(self, ensemble, x):
+        neighbors_X, neighbors_y = self.get_neighbors(x)
+       
+        pool = []
+        for i, neighbor in enumerate(neighbors_X):
+            for c in ensemble.classifiers:
+                if c.predict(neighbor) == neighbors_y[i]:
+                    pool.append(c)
+
+        return Ensemble(classifiers=pool), None
+
+
+
+
+
+
 
 
 class KNORA_DB_U(KNORA):
