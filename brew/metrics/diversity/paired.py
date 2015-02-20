@@ -1,6 +1,55 @@
 import numpy as np
 
 
+def __coefficients(oracle):
+    A, B = oracle[:,0], oracle[:,1]
+
+    a = np.sum(A * B)           # A right, B right
+    b = np.sum(~A * B)          # A wrong, B right
+    c = np.sum(A * ~B)          # A right, B wrong
+    d = np.sum(~A * ~B)         # A wrong, B wrong
+
+    return a, b, c, d
+    
+
+def kuncheva_q_statistics(oracle):    
+    L = oracle.shape[1]
+    qs = np.zeros((L * (L - 1))/2)
+    qs_i = 0
+
+    for i in range(L):
+        for j in range(i+1, L)
+            a, b, c, d = __coefficients(oracle[:,[i,j]])
+            qs[qs_i] = float(a*d - b*c) / (a*d + b*c)
+            qs_i = qs_i + 1
+
+    return np.mean(qs)
+
+
+def kuncheva_correlation_coefficient_p(oracle):
+    a, b, c, d = __coefficients(oracle)
+    p = float((a*d - b*c)) / np.sqrt((a+b)*(c+d)*(a+c)*(b+d))
+    return p
+
+
+def kuncheva_disagreement_measure(oracle):
+    a, b, c, d = __coefficients(oracle)
+    disagreement = float(b + c) / (a + b + c + d)
+    return disagreement
+    
+
+def kuncheva_agreement_measure(oracle):
+    return 1.0/disagreement_measure(oracle)
+
+
+def kuncheva_double_fault_measure(oracle):
+    a, b, c, d = __coefficients(oracle)
+    df = float(d) / (a + b + c + d)
+    return df
+ 
+
+
+
 def __get_coefficients(y_true, y_pred_a, y_pred_b):
     a, b, c, d = 0, 0, 0, 0
     for i in range(y_true.shape[0]):
