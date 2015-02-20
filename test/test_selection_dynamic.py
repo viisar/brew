@@ -12,6 +12,7 @@ from sklearn.cross_validation import train_test_split
 from brew.base import Ensemble
 from brew.generation.bagging import *
 from brew.selection.dynamic.knora import *
+from brew.selection.dynamic.knora_db import *
 
 Xtra = np.random.random((100, 2))
 ytra = np.random.randint(0,2,100)
