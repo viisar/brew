@@ -4,6 +4,59 @@ from brew.base import Ensemble
 from .base import DCS
 
 class OLA(DCS):
+    """Overall Local Accuracy.
+
+    The Overall Local Accuracy selects the best classifier for
+    a sample using it's K nearest neighbors.
+
+    Attributes
+    ----------
+    `Xval` : array-like, shape = [indeterminated, n_features]
+        Validation set.
+
+    `yval` : array-like, shape = [indeterminated]
+        Labels of the validation set.
+
+    `knn`  : sklearn KNeighborsClassifier,
+        Classifier used to find neighborhood.
+
+
+    Examples
+    --------
+    >>> from brew.selection.dynamic.ola import OLA
+    >>> from brew.generation.bagging import Bagging
+    >>> from brew.base import EnsembleClassifier
+    >>>
+    >>> from sklearn.tree import DecisionTreeClassifier
+    >>> import numpy as np
+    >>>
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
+    >>>
+    >>> bag = Bagging(base_classifier=DecisionTreeClassifier(max_depth=1, min_samples_leaf=1), n_classifiers=10)
+    >>> bag.fit(X, y)
+    >>>
+    >>> ola = OLA(X, y, K=3)
+    >>>
+    >>> clf = EnsembleClassifier(bag.ensemble, selector=ola)
+    >>> clf.predict([-1.1,-0.5])
+    [1]
+
+    See also
+    --------
+    brew.selection.dynamic.lca.LCA: Local Class Accuracy.
+
+    References
+    ----------
+    Woods, Kevin, Kevin Bowyer, and W. Philip Kegelmeyer Jr. "Combination 
+    of multiple classifiers using local accuracy estimates." Computer Vision 
+    and Pattern Recognition, 1996. Proceedings CVPR'96, 1996 IEEE Computer 
+    Society Conference on. IEEE, 1996.
+
+    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. 
+    "From dynamic classifier selection to dynamic ensemble selection." 
+    Pattern Recognition 41.5 (2008): 1718-1731.
+    """
 
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):
