@@ -1,5 +1,10 @@
-#TODO: add reference to paper
 #TODO: add documentation header
+
+"""
+[1] Kittler, J.; Hatef, M.; Duin, R.P.W.; Matas, J., "On combining classifiers,"
+    Pattern Analysis and Machine Intelligence, IEEE Transactions on , vol.20,
+    no.3, pp.226,239, Mar 1998
+"""
 
 import numpy as np
 
@@ -22,8 +27,7 @@ def max_rule(probs):
 
 
 def min_rule(probs):
-    """
-    Implements the min rule as defined by [1].
+    """ Implements the min rule as defined by [1].
 
     This rule only makes sense if the classifiers output
     the posterior probabilities for each class.
