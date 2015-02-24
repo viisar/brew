@@ -21,7 +21,60 @@ class KNORA(DCS):
 
     
 class KNORA_ELIMINATE(KNORA):
+    """K-nearest-oracles Eliminate.
 
+    The KNORA Eliminate reduces the neighborhood until finds an
+    ensemble of classifiers that correctly classify all neighbors.
+
+    Attributes
+    ----------
+    `Xval` : array-like, shape = [indeterminated, n_features]
+        Validation set.
+
+    `yval` : array-like, shape = [indeterminated]
+        Labels of the validation set.
+
+    `knn`  : sklearn KNeighborsClassifier,
+        Classifier used to find neighborhood.
+
+    `weighted` : bool, (makes no difference in knora_eliminate)
+        Bool that defines if the classifiers uses weights or not
+
+
+    Examples
+    --------
+    >>> from brew.selection.dynamic.knora import KNORA_ELIMINATE
+    >>> from brew.generation.bagging import Bagging
+    >>> from brew.base import EnsembleClassifier
+    >>>
+    >>> from sklearn.tree import DecisionTreeClassifier
+    >>> import numpy as np
+    >>>
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
+    >>>
+    >>> dt = DecisionTreeClassifier(max_depth=1, min_samples_leaf=1)
+    >>> bag = Bagging(base_classifier=dt, n_classifiers=10)
+    >>> bag.fit(X, y)
+    >>>
+    >>> ke = KNORA_ELIMINATE(X, y, K=5)
+    >>>
+    >>> clf = EnsembleClassifier(bag.ensemble, selector=ke)
+    >>> clf.predict([-1.1,-0.5])
+    [1]
+
+    See also
+    --------
+    brew.selection.dynamic.knora.KNORA_UNION: KNORA Union.
+    brew.selection.dynamic.lca.LCA: Local Class Accuracy.
+    brew.selection.dynamic.ola.OLA: Overall Local Accuracy.
+
+    References
+    ----------
+    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. 
+    "From dynamic classifier selection to dynamic ensemble selection." 
+    Pattern Recognition 41.5 (2008): 1718-1731.
+    """
     def select(self, ensemble, x):
         ensemble_mask = None
 
@@ -114,6 +167,60 @@ class KNORA_ELIMINATE_2(KNORA):
 
 
 class KNORA_UNION(KNORA):
+    """K-nearest-oracles Union.
+
+    The KNORA union reduces the neighborhood until finds an
+    ensemble of classifiers that correctly classify all neighbors.
+
+    Attributes
+    ----------
+    `Xval` : array-like, shape = [indeterminated, n_features]
+        Validation set.
+
+    `yval` : array-like, shape = [indeterminated]
+        Labels of the validation set.
+
+    `knn`  : sklearn KNeighborsClassifier,
+        Classifier used to find neighborhood.
+
+    `weighted` : bool, (makes no difference in knora_eliminate)
+        Bool that defines if the classifiers uses weights or not
+
+
+    Examples
+    --------
+    >>> from brew.selection.dynamic.knora import KNORA_UNION
+    >>> from brew.generation.bagging import Bagging
+    >>> from brew.base import EnsembleClassifier
+    >>>
+    >>> from sklearn.tree import DecisionTreeClassifier
+    >>> import numpy as np
+    >>>
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
+    >>>
+    >>> dt = DecisionTreeClassifier(max_depth=1, min_samples_leaf=1)
+    >>> bag = Bagging(base_classifier=dt, n_classifiers=10)
+    >>> bag.fit(X, y)
+    >>>
+    >>> ku = KNORA_UNION(X, y, K=5)
+    >>>
+    >>> clf = EnsembleClassifier(bag.ensemble, selector=ku)
+    >>> clf.predict([-1.1,-0.5])
+    [1]
+
+    See also
+    --------
+    brew.selection.dynamic.knora.KNORA_ELIMINATE: Knora Eliminate.
+    brew.selection.dynamic.lca.LCA: Local Class Accuracy.
+    brew.selection.dynamic.ola.OLA: Overall Local Accuracy.
+
+    References
+    ----------
+    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. 
+    "From dynamic classifier selection to dynamic ensemble selection." 
+    Pattern Recognition 41.5 (2008): 1718-1731.
+    """
 
     def select(self, ensemble, x):
         neighbors_X, neighbors_y = self.get_neighbors(x)
