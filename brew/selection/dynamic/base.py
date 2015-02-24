@@ -5,8 +5,11 @@ from sklearn.lda import LDA
 from sklearn.decomposition import PCA
 from sklearn.neighbors.classification import KNeighborsClassifier
 
+from abc import abstractmethod
+
 class DCS(object):
 
+    @abstractmethod
     def select(self, ensemble, x):
         pass
 
