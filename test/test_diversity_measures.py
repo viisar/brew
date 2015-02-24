@@ -61,7 +61,6 @@ class TestNonPaired():
 class TestPaired():
 
     def test_q(self):
-        print paired.kuncheva_q_statistics(ensemble_output), example['Q']
         assert np.isclose(paired.kuncheva_q_statistics(ensemble_output), example['Q'], atol=atol)
 
     def test_corr(self):

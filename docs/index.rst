@@ -9,8 +9,9 @@ Contents:
 =========
 
 .. toctree::
-   :maxdepth: 2
-
+   :maxdepth: 3
+   
+   brew
    installation
    usage
    contributing

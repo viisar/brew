@@ -27,15 +27,13 @@ lint:
 	flake8 brew test
 
 test:
-	py.test
+	py.test brew test
 
 test-all:
 	tox
 
-coverage:
-	coverage run --source brew setup.py test
-	coverage report -m
-	coverage html
+cov:
+	py.test --cov-report html --cov brew/ test/
 	xdg-open htmlcov/index.html
 
 docs:
