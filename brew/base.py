@@ -18,7 +18,42 @@ def transform2votes(output, n_classes):
 
 
 class Ensemble(object):
+    """Class that represents a collection of classifiers.
 
+    The Ensemble class serves as a wrapper for a list of classifiers,
+    besides providing a simple way to calculate the output of all the
+    classifiers in the ensemble. 
+    
+    Attributes
+    ----------
+    `classifiers` : list 
+        Stores all classifiers in the ensemble.
+
+    `yval` : array-like, shape = [indeterminated]
+        Labels of the validation set.
+
+    `knn`  : sklearn KNeighborsClassifier,
+        Classifier used to find neighborhood.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearn.tree import DecisionTreeClassifier
+    >>>
+    >>> from brew.base import Ensemble
+    >>>
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
+    >>>
+    >>> dt1 = DecisionTreeClassifier()
+    >>> dt2 = DecisionTreeClassifier()
+    >>>
+    >>> dt1.fit(X, y)
+    >>> dt2.fit(X, y)
+    >>>
+    >>> ens = Ensemble(classifiers=[dt1, dt2])
+ 
+    """
     def __init__(self, classifiers=None):
         
         if classifiers == None:
@@ -44,6 +79,42 @@ class Ensemble(object):
         return self.classes_
 
     def output(self, X, mode='votes'):
+        """Returns the output of all classifiers packed in a numpy array.
+       
+        This method calculates the output of each classifier, and stores them
+        in a array-like shape. The specific shape and the meaning of each element
+        is defined by argument `mode`. 
+
+        (1) 'labels': each classifier will return a single label prediction
+        for each sample in X, therefore the ensemble output will be a 2d-array
+        of shape (n_samples, n_classifiers), with elements being the class labels.
+
+        (2) 'probs': each classifier will return the posterior probabilities of each
+        class (i.e. instead of returning a single choice it will return the
+        probabilities of each class label being the right one). The ensemble output
+        will be a 3d-array with shape (n_samples, n_classes, n_classifiers), with
+        each element being the probability of a specific class label being right on a
+        given sample according to one the classifiers. This mode can be used with
+        any combination rule.
+
+        (3) 'votes': each classifier will return votes for each class label (i.e.
+        a binary representation, where the chosen class label will have one vote
+        and the other labels will have zero votes. The ensemble output will be
+        a binary 3d-array with shape (n_samples, n_classes, n_classifiers), with
+        the elements being the votes. This mode is mainly used in combining the
+        classifiers output by using majority vote rule.
+
+        Parameters
+        ----------
+        X: array-like, shape = [n_samples, n_features]
+                The test input samples.
+
+        mode: string, optional(default='labels')
+                The type of output given by each classifier.  
+                'labels' | 'probs' | 'votes'
+            
+            
+        """
 
         if mode == 'labels':
             out = np.zeros((X.shape[0], len(self.classifiers)))
