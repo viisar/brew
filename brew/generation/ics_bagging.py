@@ -136,7 +136,7 @@ class ICSBagging(PoolGenerator):
 
 
 
-class SmoteICSBagging(AdaptiveBagging):
+class SmoteICSBagging(ICSBagging):
     
     def bootstrap_classifiers(self, X, y, K, pos_prob):
 
