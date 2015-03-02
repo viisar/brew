@@ -3,27 +3,27 @@ from __future__ import division
 import numpy as np
 
 import sklearn
-from sklearn.lda import LDA
-from sklearn.decomposition import PCA
 
 from brew.base import Ensemble
 from brew.combination.rules import majority_vote_rule
 from brew.combination.combiner import Combiner
 from brew.generation import Bagging
 
-from brew.metrics.evaluation import auc_score
-from brew.metrics.diversity.paired import paired_metric_ensemble
-from brew.metrics.diversity.non_paired import entropy_measure_e
+from brew.metrics.diversity.base import Diversity
+
+import brew.metrics.evaluation as evaluation
+import brew.metrics.diversity.non_paired as non_paired
 
 from brew.preprocessing.smote import smote
 
 from .base import PoolGenerator
 
-class AdaptiveBagging(PoolGenerator):
+class ICSBagging(PoolGenerator):
 
 
     def __init__(self, K=10, alpha=0.75, base_classifier=None, n_classifiers=100,
-            combination_rule='majority_vote', max_samples=1.0, positive_label = 1):
+            combination_rule='majority_vote', diversity_metric='e', max_samples=1.0,
+            positive_label=1):
 
         self.K = K
         self.alpha = alpha
@@ -38,6 +38,9 @@ class AdaptiveBagging(PoolGenerator):
         self.ensemble = None
         self.combiner = Combiner(rule=combination_rule)
 
+        self.diversity_metric = diversity_metric
+        self.diversity = Diversity(metric=diversity_metric)
+
         self.validation_X = None
         self.validation_y = None
 
@@ -48,20 +51,23 @@ class AdaptiveBagging(PoolGenerator):
 
 
     def fitness(self, classifier):
-        #TODO check different diversities and normalize
+        '''
+        #TODO normalize diversity metric.
+        '''
         self.ensemble.add(classifier)
         out = self.ensemble.output(self.validation_X)
         y_pred = self.combiner.combine(out)
         y_true = self.validation_y
-        auc = auc_score(y_true, y_pred)
-        '''
-        diversity = paired_metric_ensemble(self.ensemble, 
+
+        auc = evaluation.auc_score(y_true, y_pred)
+        div = self.diversity.calculate(self.ensemble,
                 self.validation_X, self.validation_y)
-        '''
-        diversity = entropy_measure_e(self.ensemble,
-                self.validation_X, self.validation_y)
+
+        #diversity = entropy_measure_e(self.ensemble,
+        #        self.validation_X, self.validation_y)
+
         self.ensemble.classifiers.pop()
-        return self.alpha * auc + (1.0 - self.alpha) * diversity
+        return self.alpha * auc + (1.0 - self.alpha) * div
 
 
     def _calc_pos_prob(self):
@@ -130,7 +136,7 @@ class AdaptiveBagging(PoolGenerator):
 
 
 
-class SmoteAdaptiveBagging(AdaptiveBagging):
+class SmoteICSBagging(ICSBagging):
     
     def bootstrap_classifiers(self, X, y, K, pos_prob):
 
