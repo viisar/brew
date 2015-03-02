@@ -57,6 +57,29 @@ example4['mean']   = 0
 example4['median'] = 0
 
 
+example5 = {}
+example5['data'] = np.array([   [ 0,  0,  0],
+                                [ 0,  1,  0],
+                                [ 1,  0,  1]])
+
+example5['majority_vote'] =  2
+
+example6 = {}
+example6['data'] = np.array([   [ 1,  0,  0],
+                                [ 0,  1,  0],
+                                [ 0,  0,  1]])
+
+example6['majority_vote'] =  0
+
+
+example7 = {}
+example7['data'] = np.array([   [ 0,  0,  0],
+                                [ 1,  1,  1],
+                                [ 0,  0,  0]])
+
+example7['majority_vote'] =  1
+
+
 
 class TestAllProbRules():
 
@@ -158,8 +181,11 @@ class TestMajorityVote():
         example = np.array([[0],[0],[1]])
         assert majority_vote_rule(example) == 2
 
-    def test_with_mult_classifiers_mult_classes(self):
-        example = np.array( [   [0, 0, 0],
-                                [1, 0, 1],
-                                [0, 1, 0]   ] )
-        assert majority_vote_rule(example) == 1
+    def test_example5(self):
+        assert majority_vote_rule(example5['data']) == example5['majority_vote']
+
+    def test_example6(self):
+        assert majority_vote_rule(example6['data']) == example6['majority_vote']
+
+    def test_example7(self):
+        assert majority_vote_rule(example7['data']) == example7['majority_vote']
