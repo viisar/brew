@@ -12,7 +12,6 @@ from sklearn.cross_validation import train_test_split
 from brew.base import Ensemble
 from brew.generation.bagging import *
 from brew.selection.dynamic.knora import *
-from brew.selection.dynamic.knora_db import *
 
 Xtra = np.random.random((100, 2))
 ytra = np.random.randint(0,2,100)
@@ -47,18 +46,4 @@ class TestKNORA_U():
         selector = KNORA_UNION(Xval=Xval, yval=yval)
         for x in Xtst:
             pool, w = selector.select(bag.ensemble, x)
-       
-class TestKNORA_DB_U():
 
-    def test_simple(self):
-        selector = KNORA_DB_U(Xval=Xval, yval=yval)
-        for x in Xtst:
-            pool, w = selector.select(bag.ensemble, x)
- 
-class TestKNORA_DB_E():
-
-    def test_simple(self):
-        selector = KNORA_DB_E(Xval=Xval, yval=yval)
-        for x in Xtst:
-            pool, w = selector.select(bag.ensemble, x)
- 
