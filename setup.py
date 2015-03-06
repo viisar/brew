@@ -21,9 +21,12 @@ Documentation
 The full documentation is at http://brew.rtfd.org."""
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
+import brew
+VERSION=brew.__version__
+
 setup(
     name='brew',
-    version='0.1.0',
+    version=VERSION,
     description='BREW: Python Multiple Classifier System API',
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
     author='Dayvid Victor <victor.dvro@gmail.com>, Thyago Porpino <thyago.porpino@gmail.com>',
