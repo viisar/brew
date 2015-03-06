@@ -31,10 +31,9 @@ bag.fit(X_val, y_val)
 
 dcs_list = [OLA(X_val, y_val),
             LCA(X_val, y_val),
-            KNORA_ELIMINATE(X_val, y_val), KNORA_UNION(X_val, y_val),
-            KNORA_DB_U(X_val, y_val), KNORA_DB_E(X_val, y_val)]
+            KNORA_ELIMINATE(X_val, y_val), KNORA_UNION(X_val, y_val)]
 
-dcs_names = ['ola', 'lca', 'KE', 'KU', 'KDBU', 'KDBE']
+dcs_names = ['ola', 'lca', 'KE', 'KU']
 
 
 print '------------------------------------------------'

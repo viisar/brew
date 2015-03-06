@@ -23,7 +23,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='brew',
-    version='0.1.0',
+    version='0.1.1',
     description='BREW: Python Multiple Classifier System API',
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
     author='Dayvid Victor <victor.dvro@gmail.com>, Thyago Porpino <thyago.porpino@gmail.com>',
@@ -31,6 +31,13 @@ setup(
     url='https://github.com/viisar/brew',
     packages=[
         'brew',
+        'brew.combination',
+        'brew.generation',
+        'brew.metrics',
+        'brew.metrics.diversity',
+        'brew.preprocessing',
+        'brew.selection',
+        'brew.selection.dynamic'
     ],
     package_dir={'brew': 'brew'},
     include_package_data=True,
@@ -41,6 +48,7 @@ setup(
     keywords='brew',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
@@ -50,5 +58,6 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: Implementation :: PyPy',
+        'Topic :: Scientific/Engineering',
     ],
 )
