@@ -10,10 +10,38 @@ from .base import DCS
 from brew.base import Ensemble
 from brew.selection.dynamic.knora import KNORA
 from brew.selection.dynamic.knora import KNORA_ELIMINATE
+from brew.selection.dynamic.knora import KNORA_ELIMINATE_2
 from brew.selection.dynamic.knora import KNORA_UNION
+from brew.selection.dynamic.knora import KNORA_UNION_2
 from brew.selection.dynamic.knora import _get_pool_mask
 
 class KNORA_DB_U(KNORA):
+
+    def is_indecision_region(self, x, ensemble, alpha=0.3):
+        [dists], [idx] = self.knn.kneighbors(x, return_distance=True)
+        y_nn = self.yval[idx] # k neighbors target
+
+        if len(set(y_nn)) == 1:
+            return False
+
+        mx, mn = 0, len(y_nn)
+        for y in set(y_nn):
+            count = sum(y_nn == y)
+            if d[y] < mn:
+                mn = y
+            if d[y] > mx:
+                mx = y
+
+        if mn <= alpha * mx:
+            return False
+
+        dist_lcl = sorted([float(d[k]) / np.sum(y_nn==k) for k in d.keys()], reverse=True)
+        dist_sum = float(sum([v for (k, v) in d.items()]))
+        if (max(dist_lcl)/dist_sum * alpha) >= (max(dist_lcl[1:])):
+            return False
+
+        return True
+
     def select(self, ensemble, x):
         neighbors_X, neighbors_y = self.get_neighbors(x)
         pool_output = ensemble.output(neighbors_X, mode='labels')
@@ -43,7 +71,7 @@ class KNORA_DB_U(KNORA):
             pool = Ensemble(classifiers=[ensemble.classifiers[i] for i in selected_idx])
 
         else: # if no classifiers are selected, use all classifiers with no weights
-            knora_u = KNORA_UNION(self.Xval, self.yval, knn=self.knn, K = self.K)
+            knora_u = KNORA_UNION_2(self.Xval, self.yval, knn=self.knn, K = self.K)
             return knora_u.select(ensemble, x)
             #pool = ensemble
             #weighted_votes = None
@@ -98,7 +126,7 @@ class KNORA_DB_E(KNORA):
 
         #if len(set(neighbors_y)) == 1:
         if not self.is_indecision_region(x, ensemble):
-            knora_e = KNORA_ELIMINATE(self.Xval, self.yval, 
+            knora_e = KNORA_ELIMINATE_2(self.Xval, self.yval, 
                     K=self.K, weighted=False, knn=self.knn)
             selection, weights = knora_e.select(ensemble, x)
             knora_e = None
@@ -128,18 +156,18 @@ class KNORA_DB_E(KNORA):
 
                 i = i - 1
 
-        #TODO evaluate if this is a etter option
-        knora_u = KNORA_DB_U(self.Xval, self.yval, K=self.K, knn=self.knn)
-        selection, weights = knora_u.select(ensemble, x)
-        knora_e = None
-        return selection, weights
-
-        # if NO classifiers get the nearest neighbor correctly
+                # if NO classifiers get the nearest neighbor correctly
         if ensemble_mask is None:
             # Increase neighborhood until one classifier
             # gets at least ONE (i.e. ANY) neighbors correctly. 
             # Starts with 2 because mask_all with k=1 is 
             # the same as mask_any with k=1
+            knora_e = KNORA_ELIMINATE_2(self.Xval, self.yval, 
+                    K=self.K, weighted=False, knn=self.knn)
+            selection, weights = knora_e.select(ensemble, x)
+            knora_e = None
+            return selection, weights
+
             labels = set(neighbors_y)
             pool_mask = np.zeros(pool_output.shape[1])
             for i in range(-1, self.K):
