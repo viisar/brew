@@ -11,6 +11,9 @@ brew
 .. image:: https://pypip.in/d/brew/badge.png
     :target: https://pypi.python.org/pypi/brew
 
+.. image:: https://pypip.in/d/brew/badge.png
+    :target: https://testpypi.python.org/pypi/brew
+
 
 BREW: A Multiple Classifier Systems API
 
