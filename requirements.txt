@@ -1,3 +1,2 @@
 wheel>=0.22
 sphinxcontrib-napoleon>=0.3.1
-scikit-learn>=0.15.2
