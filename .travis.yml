@@ -3,9 +3,9 @@
 language: python
 
 python:
-  - "3.3"
-  - "2.7"
   - "2.6"
+  - "2.7"
+  - "3.3"
   - "pypy"
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
