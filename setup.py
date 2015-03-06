@@ -26,8 +26,8 @@ setup(
     version='0.1.0',
     description='BREW: Python Multiple Classifier System API',
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
-    author='Dayvid Victor',
-    author_email='victor.dvro@gmail.com',
+    author='Dayvid Victor <victor.dvro@gmail.com>, Thyago Porpino <thyago.porpino@gmail.com>',
+    author_email='brew-python-devs@googlegroups.com',
     url='https://github.com/viisar/brew',
     packages=[
         'brew',
