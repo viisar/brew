@@ -6,7 +6,7 @@ brew
     :target: http://badge.fury.io/py/brew
 
 .. image:: https://travis-ci.org/viisar/brew.png?branch=master
-    :target: https://travis-ci.org/dvro/brew
+    :target: https://travis-ci.org/viisar/brew
 
 .. image:: https://pypip.in/d/brew/badge.png
     :target: https://pypi.python.org/pypi/brew
