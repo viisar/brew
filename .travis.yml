@@ -13,6 +13,6 @@ before_install:
   - travis_retry conda install --yes python=$TRAVIS_PYTHON_VERSION pip numpy scipy
 install:
   - travis_retry pip install -r requirements.txt
-  - travis_retry python setup.py dev
+  - travis_retry python setup.py install
 script: travis_wait py.test
 cache: apt
