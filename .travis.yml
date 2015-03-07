@@ -1,17 +1,19 @@
-# Config file for automatic testing at travis-ci.org
 
 language: python
-
 python:
-  - "2.6"
   - "2.7"
   - "3.3"
-  - "pypy"
+install:
+  # Install conda
+  - sudo pip install conda
+  # install deps
+  - sudo conda init
+  - sudo conda update conda --yes
+  - deps='pip numpy scipy matplotlib scikit-learn py.test sphinx sphinxcontrib-napoleon'
+  - conda create -p $HOME/py --yes $deps "python=$TRAVIS_PYTHON_VERSION"
+  - export PATH=$HOME/py/bin:$PATH
+  # install your own package into the environment
+  - python setup.py install
 
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: 
-  - pip install -r requirements.txt
-
-# command to run tests, e.g. python setup.py test
 script:
   - py.test
