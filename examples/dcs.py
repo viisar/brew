@@ -36,9 +36,9 @@ dcs_list = [OLA(X_val, y_val),
 dcs_names = ['ola', 'lca', 'KE', 'KU']
 
 
-print '------------------------------------------------'
+print('-----------------ERROR RATE----------------------')
 for dcs, name in zip(dcs_list, dcs_names):
     mcs = EnsembleClassifier(bag.ensemble, selector=dcs)
     y_pred = mcs.predict(X_test)
-    print name, zero_one_loss(y_pred, y_test)
-print '------------------------------------------------'
+    print('{}, {}'.format(name, zero_one_loss(y_pred, y_test)))
+print ('------------------------------------------------')
