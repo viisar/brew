@@ -227,7 +227,6 @@ class KNORA_UNION(KNORA):
         output_mask = (pool_output == neighbors_y[:,np.newaxis])
 
         [selected_idx] = np.where(np.any(output_mask, axis=0))
-        print selected_idx
 
         if selected_idx.size > 0:
             if self.weighted:
