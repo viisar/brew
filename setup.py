@@ -21,16 +21,26 @@ Documentation
 The full documentation is at http://brew.rtfd.org."""
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
+import brew
+VERSION=brew.__version__
+
 setup(
     name='brew',
-    version='0.1.0',
+    version=VERSION,
     description='BREW: Python Multiple Classifier System API',
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
-    author='Dayvid Victor',
-    author_email='victor.dvro@gmail.com',
+    author='Dayvid Victor <victor.dvro@gmail.com>, Thyago Porpino <thyago.porpino@gmail.com>',
+    author_email='brew-python-devs@googlegroups.com',
     url='https://github.com/viisar/brew',
     packages=[
         'brew',
+        'brew.combination',
+        'brew.generation',
+        'brew.metrics',
+        'brew.metrics.diversity',
+        'brew.preprocessing',
+        'brew.selection',
+        'brew.selection.dynamic'
     ],
     package_dir={'brew': 'brew'},
     include_package_data=True,
@@ -40,15 +50,13 @@ setup(
     zip_safe=False,
     keywords='brew',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: Implementation :: PyPy',
+        'License :: OSI Approved :: MIT License',
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: Developers',
+        'Natural Language :: English',
+        'Topic :: Scientific/Engineering',
     ],
 )

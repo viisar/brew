@@ -20,14 +20,6 @@ brew.selection.dynamic.knora module
     :undoc-members:
     :show-inheritance:
 
-brew.selection.dynamic.knora_db module
---------------------------------------
-
-.. automodule:: brew.selection.dynamic.knora_db
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 brew.selection.dynamic.lca module
 ---------------------------------
 

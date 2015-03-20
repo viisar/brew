@@ -4,14 +4,6 @@ brew.generation package
 Submodules
 ----------
 
-brew.generation.adaptive_bagging module
----------------------------------------
-
-.. automodule:: brew.generation.adaptive_bagging
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 brew.generation.bagging module
 ------------------------------
 
@@ -24,14 +16,6 @@ brew.generation.base module
 ---------------------------
 
 .. automodule:: brew.generation.base
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-brew.generation.random_newspace module
---------------------------------------
-
-.. automodule:: brew.generation.random_newspace
     :members:
     :undoc-members:
     :show-inheritance:
