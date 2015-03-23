@@ -9,7 +9,8 @@ class Priori(DCS):
         self.threshold = threshold
         super(Priori, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
 
-    def probabilities(self, clf, nn_X, nn_y, distances):
+    def probabilities(self, clf, nn_X, nn_y, distances, x):
+        # in the A Priori method, the 'x' is not used
         proba = clf.predict_proba(nn_X)
         proba = np.hstack((proba, np.zeros((proba.shape[0],1))))
 
@@ -32,11 +33,18 @@ class Priori(DCS):
         
         idx_selected, prob_selected = [], []
         
+        all_probs = np.zeros(len(ensemble))
         for idx, clf in enumerate(ensemble.classifiers):
-            prob = self.probabilities(clf, nn_X, nn_y, dists)
+            prob = self.probabilities(clf, nn_X, nn_y, dists, x)
             if prob > 0.5:
                 idx_selected = idx_selected + [idx]
                 prob_selected = prob_selected + [prob]
+
+            all_probs[idx] = prob
+
+        if len(prob_selected) == 0:
+            prob_selected = np.max(all_probs)
+            idx_selected = np.argmax(all_probs)
         
         p_correct_m = max(prob_selected)
         m = np.argmax(prob_selected)
@@ -61,8 +69,24 @@ class Priori(DCS):
 
 
 
-class Posteriori(DCS):
+class Posteriori(Priori):
 
-    def select(self, ensemble, x):
-        pass
+    def probabilities(self, clf, nn_X, nn_y, distances, x):
+        [w_l] = clf.predict(x)
+        [idx_w_l] = np.where(nn_y == w_l)
 
+        # in the A Posteriori method the 'x' is used
+        proba = clf.predict_proba(nn_X)
+        proba = np.hstack((proba, np.zeros((proba.shape[0],1))))
+
+        # if the classifier never classifies as class w_l, P(w_l|psi_i) = 0
+        proba_col = proba.shape[1] - 1
+        if w_l in clf.classes_:
+            proba_col = np.where(clf.classes_ == w_l)
+
+        delta = 1./(distances + 10e-8)
+
+        numerator = sum(proba[idx_w_l, proba_col].ravel() * delta[idx_w_l])
+        denominator = sum(proba[:, proba_col].ravel() * delta)
+        return float(numerator) / (denominator + 10e-8)
+        
