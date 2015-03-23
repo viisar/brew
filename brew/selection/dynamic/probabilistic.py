@@ -8,8 +8,6 @@ class Priori(DCS):
     def __init__(self, threshold=0.05):
         self.threshold = threshold
         
-
-    @abstractmethod
     def probabilities(self, clf, nn_X, nn_y, distances):
         proba = clf.predict_proba(nn_X)
         proba = np.hstack((proba), np.zeros(len(proba),1))
@@ -25,7 +23,7 @@ class Priori(DCS):
         p_correct = np.sum(probabilities * delta) / np.sum(delta)
         return p_correct
 
-   def select(self, ensemble, x):
+    def select(self, ensemble, x):
         selected_classifier = None
 
         nn_X, nn_y, dists = self.get_neighbors(x, 
