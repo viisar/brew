@@ -1,29 +1,18 @@
 import numpy as np
+import abc
 
 from brew.base import Ensemble
 from .base import DCS
 
-class Priori(DCS):
+class Probabilistic(DCS):
 
-    def __init__(self, Xval, yval, K=5, weighted=False, knn=None, threshold=0.05):
+    def __init__(self, Xval, yval, K=5, weighted=False, knn=None, threshold=0.1):
         self.threshold = threshold
-        super(Priori, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
+        super(Probabilistic, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
 
+    @abc.abstractmethod
     def probabilities(self, clf, nn_X, nn_y, distances, x):
-        # in the A Priori method, the 'x' is not used
-        proba = clf.predict_proba(nn_X)
-        proba = np.hstack((proba, np.zeros((proba.shape[0],1))))
-
-        d = dict(list(enumerate(clf.classes_)))
-        col_idx = np.zeros(nn_y.size,dtype=int)
-        for i in range(nn_y.size):
-            col_idx[i] = d[nn_y[i]] if nn_y[i] in d else proba.shape[1] - 1
-
-        probabilities = proba[np.arange(col_idx.size), col_idx]
-        delta = 1./(distances + 10e-8)
-        
-        p_correct = np.sum(probabilities * delta) / np.sum(delta)
-        return p_correct
+        pass
 
     def select(self, ensemble, x):
         selected_classifier = None
@@ -43,8 +32,8 @@ class Priori(DCS):
             all_probs[idx] = prob
 
         if len(prob_selected) == 0:
-            prob_selected = np.max(all_probs)
-            idx_selected = np.argmax(all_probs)
+            prob_selected = [np.max(all_probs)]
+            idx_selected = [np.argmax(all_probs)]
         
         p_correct_m = max(prob_selected)
         m = np.argmax(prob_selected)
@@ -68,8 +57,25 @@ class Priori(DCS):
         return Ensemble([selected_classifier]), None
 
 
+class Priori(Probabilistic):
+    def probabilities(self, clf, nn_X, nn_y, distances, x):
+        # in the A Priori method, the 'x' is not used
+        proba = clf.predict_proba(nn_X)
+        proba = np.hstack((proba, np.zeros((proba.shape[0],1))))
 
-class Posteriori(Priori):
+        d = dict(list(enumerate(clf.classes_)))
+        col_idx = np.zeros(nn_y.size,dtype=int)
+        for i in range(nn_y.size):
+            col_idx[i] = d[nn_y[i]] if nn_y[i] in d else proba.shape[1] - 1
+
+        probabilities = proba[np.arange(col_idx.size), col_idx]
+        delta = 1./(distances + 10e-8)
+        
+        p_correct = np.sum(probabilities * delta) / np.sum(delta)
+        return p_correct
+
+
+class Posteriori(Probabilistic):
 
     def probabilities(self, clf, nn_X, nn_y, distances, x):
         [w_l] = clf.predict(x)
