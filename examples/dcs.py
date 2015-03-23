@@ -34,6 +34,7 @@ dcs_list = [OLA(X_val, y_val),
             LCA(X_val, y_val),
             KNORA_ELIMINATE(X_val, y_val), 
             KNORA_UNION(X_val, y_val),
+            Priori(X_val, y_val)
             ]
 
 dcs_names = ['ola', 'lca', 'KE', 'KU', 'aPriori']
@@ -45,6 +46,3 @@ for dcs, name in zip(dcs_list, dcs_names):
     y_pred = mcs.predict(X_test)
     print('{}, {}'.format(name, zero_one_loss(y_pred, y_test)))
 print ('------------------------------------------------')
-print bag.ensemble.classifiers[0].predict_proba(X_test[0])
-A = bag.ensemble.classifiers[0].classes_
-print 1 == A
