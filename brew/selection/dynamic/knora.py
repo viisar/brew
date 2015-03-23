@@ -13,14 +13,6 @@ from brew.base import Ensemble
 # do not use this class directly, call it's subclasses instead (e.g. KNORA_E)
 class KNORA(DCS):
 
-    def get_neighbors(self, x):
-        # obtain the K nearest neighbors of test sample in the validation set
-        [idx] = self.knn.kneighbors(x, return_distance=False)
-        X_nn = self.Xval[idx] # k neighbors
-        y_nn = self.yval[idx] # k neighbors target
-
-        return X_nn, y_nn
-
 
     def _get_best_classifiers(self, ensemble, neighbors_X, neighbors_y, x):
         ensemble_out = ensemble.output(neighbors_X, mode='labels')
