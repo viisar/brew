@@ -57,7 +57,69 @@ class Probabilistic(DCS):
         return Ensemble([selected_classifier]), None
 
 
-class Priori(Probabilistic):
+class APriori(Probabilistic):
+    """A Priori Classifier Selection.
+
+    The A Priori method is a dynamic classifier selection that 
+    uses a probabilistic-based measures for selecting the best 
+    classifier.
+
+    Attributes
+    ----------
+    `Xval` : array-like, shape = [indeterminated, n_features]
+        Validation set.
+
+    `yval` : array-like, shape = [indeterminated]
+        Labels of the validation set.
+
+    `knn`  : sklearn KNeighborsClassifier,
+        Classifier used to find neighborhood.
+
+    `threshold`  : float, default = 0.1
+        Threshold used to verify if there is a single best.
+
+    Examples
+    --------
+    >>> from brew.selection.dynamic.probabilistic import APriori
+    >>> from brew.generation.bagging import Bagging
+    >>> from brew.base import EnsembleClassifier
+    >>>
+    >>> from sklearn.tree import DecisionTreeClassifier
+    >>> import numpy as np
+    >>>
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
+    >>>
+    >>> bag = Bagging(base_classifier=DecisionTreeClassifier(max_depth=1, min_samples_leaf=1), n_classifiers=10)
+    >>> bag.fit(X, y)
+    >>>
+    >>> apriori = APriori(X, y, K=3)
+    >>>
+    >>> clf = EnsembleClassifier(bag.ensemble, selector=apriori)
+    >>> clf.predict([-1.1,-0.5])
+    [1]
+
+    See also
+    --------
+    brew.selection.dynamic.probabilistic.APosteriori: A Posteriori DCS.
+    brew.selection.dynamic.ola.OLA: Overall Local Accuracy.
+    brew.selection.dynamic.lca.LCA: Local Class Accuracy.
+
+    References
+    ----------
+    Giacinto, Giorgio, and Fabio Roli. "Methods for dynamic classifier 
+    selection." Image Analysis and Processing, 1999. Proceedings. 
+    International Conference on. IEEE, 1999.
+
+    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. 
+    "From dynamic classifier selection to dynamic ensemble selection." 
+    Pattern Recognition 41.5 (2008): 1718-1731.
+    """
+    def __init__(self, Xval, yval, K=5, weighted=False, knn=None, threshold=0.1):
+        self.threshold = threshold
+        super(APriori, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
+
+
     def probabilities(self, clf, nn_X, nn_y, distances, x):
         # in the A Priori method, the 'x' is not used
         proba = clf.predict_proba(nn_X)
@@ -75,7 +137,67 @@ class Priori(Probabilistic):
         return p_correct
 
 
-class Posteriori(Probabilistic):
+class APosteriori(Probabilistic):
+    """A Priori Classifier Selection.
+
+    The A Priori method is a dynamic classifier selection that 
+    uses a probabilistic-based measures for selecting the best 
+    classifier.
+
+    Attributes
+    ----------
+    `Xval` : array-like, shape = [indeterminated, n_features]
+        Validation set.
+
+    `yval` : array-like, shape = [indeterminated]
+        Labels of the validation set.
+
+    `knn`  : sklearn KNeighborsClassifier,
+        Classifier used to find neighborhood.
+
+    `threshold`  : float, default = 0.1
+        Threshold used to verify if there is a single best.
+
+    Examples
+    --------
+    >>> from brew.selection.dynamic.probabilistic import APosteriori
+    >>> from brew.generation.bagging import Bagging
+    >>> from brew.base import EnsembleClassifier
+    >>>
+    >>> from sklearn.tree import DecisionTreeClassifier
+    >>> import numpy as np
+    >>>
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
+    >>>
+    >>> bag = Bagging(base_classifier=DecisionTreeClassifier(max_depth=1, min_samples_leaf=1), n_classifiers=10)
+    >>> bag.fit(X, y)
+    >>>
+    >>> aposteriori = APosteriori(X, y, K=3)
+    >>>
+    >>> clf = EnsembleClassifier(bag.ensemble, selector=aposteriori)
+    >>> clf.predict([-1.1,-0.5])
+    [1]
+
+    See also
+    --------
+    brew.selection.dynamic.probabilistic.APriori: A Priori DCS.
+    brew.selection.dynamic.ola.OLA: Overall Local Accuracy.
+    brew.selection.dynamic.lca.LCA: Local Class Accuracy.
+
+    References
+    ----------
+    Giacinto, Giorgio, and Fabio Roli. "Methods for dynamic classifier 
+    selection." Image Analysis and Processing, 1999. Proceedings. 
+    International Conference on. IEEE, 1999.
+
+    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. 
+    "From dynamic classifier selection to dynamic ensemble selection." 
+    Pattern Recognition 41.5 (2008): 1718-1731.
+    """
+    def __init__(self, Xval, yval, K=5, weighted=False, knn=None, threshold=0.1):
+        self.threshold = threshold
+        super(APosteriori, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
 
     def probabilities(self, clf, nn_X, nn_y, distances, x):
         [w_l] = clf.predict(x)
