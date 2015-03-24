@@ -32,7 +32,7 @@ Dependencies
 
 Features
 --------
-* Dynamic Classifier Selection: OLA and LCA.
+* Dynamic Classifier Selection: OLA, LCA, A Priori, A Posteriori.
 * Dynamic Ensemble Selection: KNORA E and KNORA U.
 * Oversampling: SMOTE.
 * Ensemble Combination Rules: majority vote, min, max, mean and median.
