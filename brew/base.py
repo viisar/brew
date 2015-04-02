@@ -1,6 +1,7 @@
 import numpy as np
 
 from brew.combination.combiner import Combiner
+from brew.metrics.evaluation import auc_score
 
 
 def transform2votes(output, n_classes):
@@ -204,3 +205,24 @@ class EnsembleClassifier(object):
                     y.append(tmp)
 
         return np.asarray(y)
+
+
+def oracle(ensemble, y_true, metric=auc_score):
+    out = ensemble.output(X, mode='labels')
+    oracle = np.equal(out, y[:,np.newaxis])
+    mask = np.any(oracle, axis=1)
+    y_pred = ensemble_output[:,0]
+    y_pred[mask] = y_true
+    return metric(y_pred, y_true)
+
+def single_best(ensemble, y_true, metric=auc_score):
+    out = ensemble.output(X, mode='labels')
+    scores = metric(out, y_true[:,np.newaxis])
+    return np.max(scores)
+
+
+
+
+
+
+
