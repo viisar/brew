@@ -207,17 +207,19 @@ class EnsembleClassifier(object):
         return np.asarray(y)
 
 
-def oracle(ensemble, y_true, metric=auc_score):
+def oracle(ensemble, X, y_true, metric=auc_score):
     out = ensemble.output(X, mode='labels')
-    oracle = np.equal(out, y[:,np.newaxis])
+    oracle = np.equal(out, y_true[:,np.newaxis])
     mask = np.any(oracle, axis=1)
-    y_pred = ensemble_output[:,0]
-    y_pred[mask] = y_true
+    y_pred = out[:,0]
+    y_pred[mask] = y_true[mask]
     return metric(y_pred, y_true)
 
-def single_best(ensemble, y_true, metric=auc_score):
+def single_best(ensemble, X, y_true, metric=auc_score):
     out = ensemble.output(X, mode='labels')
-    scores = metric(out, y_true[:,np.newaxis])
+    scores = np.zeros(len(ensemble), dtype=float)
+    for i in range(scores.shape[0]):
+        scores[i] = metric(out[:,i], y_true)
     return np.max(scores)
 
 
