@@ -23,7 +23,23 @@ class RandomSubspace(PoolGenerator):
 
         self.sk_random_subspace.fit(X, y)
         self.classifiers = self.sk_random_subspace.estimators_
-        self.ensemble = Ensemble(classifiers=self.classifiers)
+
+        class RandSubClf(object):
+            def __init__(self, mask, clf):
+                self.mask = mask
+                self.clf = clf
+                self.classes_ = clf.classes_
+
+            def predict(self, X):
+                return self.clf.predict(X[:,self.mask])
+                
+        classifiers = []
+        for idx, clf in enumerate(self.classifiers):
+            mask = np.zeros(X.shape[1], bool)
+            mask[self.sk_random_subspace.estimators_features_[idx]] = True
+            classifiers = classifiers + [RandSubClf(mask, clf)]
+
+        self.ensemble = Ensemble(classifiers=classifiers)
         self.classes_ = set(y)
 
         return self

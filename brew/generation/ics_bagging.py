@@ -137,7 +137,16 @@ class ICSBagging(PoolGenerator):
 
 
 class SmoteICSBagging(ICSBagging):
-    
+
+    def __init__(self, K=10, alpha=0.75, base_classifier=None, n_classifiers=100,
+            combination_rule='majority_vote', diversity_metric='e', max_samples=1.0,
+            positive_label=1, smote_k=5):
+        self.smote_k = smote_k
+        super(SmoteICSBagging, self).__init__(K=K, alpha=alpha, base_classifier=base_classifier, 
+                n_classifiers=n_classifiers, combination_rule=combination_rule, 
+                diversity_metric=diversity_metric, max_samples=max_samples, 
+                positive_label=positive_label)
+
     def bootstrap_classifiers(self, X, y, K, pos_prob):
 
         clfs = []
@@ -159,7 +168,7 @@ class SmoteICSBagging(ICSBagging):
             #print '         N_smote: {}'.format(N_smote)
             #print '         T : {}'.format(X[mask].shape)
             
-            X_syn = smote(X[mask],N=N_smote, k=5)
+            X_syn = smote(X[mask],N=N_smote, k=self.smote_k)
             #print '         out : {}'.format(X_syn.shape)
             y_syn = self.positive_label * np.ones((X_syn.shape[0],))
 
