@@ -32,7 +32,6 @@ class ICSBagging(PoolGenerator):
         self.n_classifiers = n_classifiers
         self.combination_rule = combination_rule
         self.positive_label = positive_label
-        self.bagging = Bagging(base_classifier=base_classifier, n_classifiers=K)
 
         self.classifiers = None
         self.ensemble = None

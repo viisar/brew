@@ -35,8 +35,9 @@ class RandomSubspace(PoolGenerator):
                 
         classifiers = []
         for idx, clf in enumerate(self.classifiers):
-            mask = np.zeros(X.shape[1], bool)
-            mask[self.sk_random_subspace.estimators_features_[idx]] = True
+            #mask = np.zeros(X.shape[1], bool)
+            #mask[self.sk_random_subspace.estimators_features_[idx]] = True
+            mask = self.sk_random_subspace.estimators_features_[idx]
             classifiers = classifiers + [RandSubClf(mask, clf)]
 
         self.ensemble = Ensemble(classifiers=classifiers)
@@ -45,10 +46,69 @@ class RandomSubspace(PoolGenerator):
         return self
 
 
-    def predict(self, X):
+    def predict_old(self, X):
         #TODO usar combinator
         y = []
         for i in range(X.shape[0]):
+            d = {}
+            mx = None
+            for idx, classifier in enumerate(self.classifiers):
+                mask = np.zeros(X.shape[1], bool)
+                print '--'
+                print 'mask', mask
+                print 'e_f_[idx]', self.sk_random_subspace.estimators_features_[idx] 
+                mask[self.sk_random_subspace.estimators_features_[idx]] = True
+                print 'mask', mask[self.sk_random_subspace.estimators_features_[idx]]
+                print 'mask', mask
+                print 'X[i]', X[i]
+                print 'X[i][mask]', X[i][mask]
+                print '--'
+                
+                [out] = classifier.predict(X[i][mask])
+                d[out] = d[out] + 1 if out in d else 1
+                if mx == None or d[mx] < d[out]:
+                    mx = out
+            y = y + [mx]
+        print 'y', y
+        y = map(lambda e: self.sk_random_subspace.classes_[e], y)
+        print 'y\'', y
+
+        y_tmp = self.predict(X)
+        y == y_tmp
+
+        return np.asarray(y)
+            
+    def predict(self, X):
+        #TODO usar combinator
+        y = np.zeros(X.shape[0], dtype=int)
+        for i in range(X.shape[0]):
+            tmp = []
+            for clf, msk in zip(self.sk_random_subspace.estimators_,
+                    self.sk_random_subspace.estimators_features_):
+                #print '--'
+                #print X[i]
+                #print msk
+                #print X[i][msk]
+                #print '--'
+                [o] = clf.predict(X[i][msk])
+                tmp.append(o)
+            y[i] = np.argmax(np.bincount(tmp))
+        return np.array(y)
+                
+'''
+        y = []
+        output = np.zeros((X.shape[0], self.n_classifiers))
+        for i, (clf, msk) in enumerate(zip(self.sk_random_subspace.estimators_,
+                self.sk_random_subspace.estimators_features_)):
+            output[:,i] = clf.predict(X[:,msk])
+        
+        out = np.sum(outputs, axis=1)
+        
+        
+        out > (self.n_classifiers/2.)
+        
+            
+
             d = {}
             mx = None
             for idx, classifier in enumerate(self.classifiers):
@@ -62,7 +122,8 @@ class RandomSubspace(PoolGenerator):
         y = map(lambda e: self.sk_random_subspace.classes_[e], y)
 
         return np.asarray(y)
-            
+'''         
                 
                 
+                       
         
