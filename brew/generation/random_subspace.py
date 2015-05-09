@@ -1,9 +1,18 @@
 from brew.base import Ensemble
+from brew.base import FeatureSubsamplingTransformer
+from brew.base import BrewClassifier
+from brew.combination.combiner import Combiner
+
+from sklearn.tree import DecisionTreeClassifier
+import sklearn
+
+from brew.combination.combiner import Combiner
 from brew.combination.rules import majority_vote_rule
 from .base import PoolGenerator
 
 import numpy as np
 from sklearn.ensemble import BaggingClassifier
+
 
 class RandomSubspace(PoolGenerator):
 
@@ -48,5 +57,41 @@ class RandomSubspace(PoolGenerator):
         return np.asarray(y)
             
                 
-                
-        
+class RandomSubspaceNew(PoolGenerator):
+
+    def __init__(self, base_classifier=None, n_classifiers=100, combination_rule='majority_vote', max_features=0.5):
+        self.base_classifier = base_classifier
+        self.n_classifiers = n_classifiers
+        self.combiner = Combiner(rule=combination_rule)
+        self.classifiers = None
+        self.ensemble = None
+        self.max_features = max_features
+       
+    def fit(self, X, y):
+        self.ensemble = Ensemble()
+
+        for i in range(self.n_classifiers):
+            chosen_features = np.random.choice(X.shape[1], int(X.shape[1]*self.max_features), replace=False)
+            transformer = FeatureSubsamplingTransformer(features=chosen_features)
+
+            classifier = BrewClassifier(classifier=sklearn.base.clone(self.base_classifier), transformer=transformer)
+            classifier.fit(X, y)
+            
+            self.ensemble.add(classifier)
+
+        return
+
+    def predict(self, X):
+        out = self.ensemble.output(X)
+        return self.combiner.combine(out)
+
+
+if __name__ == '__main__':
+    
+    X = np.random.random((10,4))
+    y = np.random.randint(0,2,10)
+
+    pool = RandomSubspaceNew(base_classifier=DecisionTreeClassifier(), n_classifiers=40)
+    pool.fit(X, y)
+
+    print pool.predict(X)
