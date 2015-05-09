@@ -17,6 +17,44 @@ def transform2votes(output, n_classes):
     return votes.astype('int')
 
 
+class Transformer(object):
+    def __init__(self):
+        pass
+
+    def apply(self, X):
+        pass
+
+class FeatureSubsamplingTransformer(Transformer):
+    def __init__(self, features=None):
+        self.features = features
+
+    def apply(self, X):
+        return X[:, self.features] 
+
+
+class BrewClassifier(object):
+    def __init__(self, classifier=None, transformer=None):
+        self.transformer = transformer
+        self.classifier = classifier
+        self.classes_ = []
+
+    def fit(self, X, y):
+        X = self.transformer.apply(X)
+        self.classifier.fit(X, y)
+        self.classes_ = self.classifier.classes_
+
+    def predict(self, X):
+        X = self.transformer.apply(X)
+        y = self.classifier.predict(X)
+        return y
+
+    def predict_proba(self, X):
+        X = self.transformer.apply(X)
+        y = self.classifier.predict_proba(X)
+
+        return y
+        
+
 class Ensemble(object):
     """Class that represents a collection of classifiers.
 
