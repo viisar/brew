@@ -23,7 +23,7 @@ class SmoteBagging(PoolGenerator):
     
     def __init__(self, base_classifier=None,
                 n_classifiers=100,
-                combination_rule='majority_vote', k=2):
+                combination_rule='majority_vote', k=5):
 
         #self.b = b
         self.k = k
