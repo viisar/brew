@@ -3,6 +3,7 @@ from sklearn.ensemble import BaggingClassifier
 
 from brew.base import Ensemble
 from brew.combination.combiner import Combiner
+import sklearn
 
 from .base import PoolGenerator
 
@@ -24,6 +25,36 @@ class Bagging(PoolGenerator):
         self.sk_bagging.fit(X, y)
         self.ensemble.add_classifiers(self.sk_bagging.estimators_)
         #self.classes_ = set(y)
+
+    def predict(self, X):
+        out = self.ensemble.output(X)
+        return self.combiner.combine(out)
+
+
+class BaggingNew(PoolGenerator):
+
+    def __init__(self, base_classifier=None, n_classifiers=100, combination_rule='majority_vote'):
+
+        self.base_classifier = base_classifier
+        self.n_classifiers = n_classifiers
+        self.ensemble = None
+        self.combiner = Combiner(rule=combination_rule)
+
+    def fit(self, X, y):
+        self.ensemble = Ensemble()
+
+        for i in range(self.n_classifiers):
+            # bootstrap
+            idx = np.random.choice(X.shape[0], X.shape[0], replace=True)
+            data, target = X[idx, :], y[idx]
+
+            classifier = sklearn.base.clone(self.base_classifier)
+            classifier.fit(data, target)
+            
+            self.ensemble.add(classifier)
+
+        return
+
 
     def predict(self, X):
         out = self.ensemble.output(X)
