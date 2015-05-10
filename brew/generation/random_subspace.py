@@ -147,7 +147,7 @@ class RandomSubspaceNew(PoolGenerator):
         self.ensemble = Ensemble()
 
         for i in range(self.n_classifiers):
-            chosen_features = np.random.choice(X.shape[1], int(X.shape[1]*self.max_features), replace=False)
+            chosen_features = np.random.choice(X.shape[1], int(np.ceil(X.shape[1]*self.max_features)), replace=False)
             transformer = FeatureSubsamplingTransformer(features=chosen_features)
 
             classifier = BrewClassifier(classifier=sklearn.base.clone(self.base_classifier), transformer=transformer)
