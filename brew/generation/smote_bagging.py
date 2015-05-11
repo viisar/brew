@@ -112,7 +112,7 @@ class SmoteBagging(PoolGenerator):
             #print('classifier : {}'.format(i))
             #print('------------------------')
             #print('b = {}'.format(b))
-            data, target = self.smote_bootstrap_sample(X, y, b=b, k=self.k)
+            data, target = self.smote_bootstrap_sample(X, y, b=float(b), k=self.k)
             #print('data = {}'.format(data.shape))
             #print()
 

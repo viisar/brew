@@ -248,9 +248,9 @@ class ICSBaggingNew(PoolGenerator):
 
 
     def fit(self, X, y):
-        if self.validation_X == None and self.validation_y == None:
-            self.validation_X = X
-            self.validation_y = y
+        #if self.validation_X == None and self.validation_y == None:
+        self.validation_X = X
+        self.validation_y = y
 
         self.classes_ = set(y)
         self.ensemble = Ensemble()
@@ -261,6 +261,9 @@ class ICSBaggingNew(PoolGenerator):
         for i in range(1, self.n_classifiers):
             clfs = self.bootstrap_classifiers(X, y, self.K, self._calc_pos_prob())
             self.ensemble.add(max(clfs, key=lambda clf: self.fitness(clf)))
+
+        self.validation_X = None
+        self.validation_y = None
         
         return self
 
