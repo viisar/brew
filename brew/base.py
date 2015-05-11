@@ -29,7 +29,12 @@ class FeatureSubsamplingTransformer(Transformer):
         self.features = features
 
     def apply(self, X):
-        return X[:, self.features] 
+        # if is only one sample (1D)
+        if X.ndim == 1:
+            return X[self.features]
+        # if X has more than one sample (2D)
+        else:
+            return X[:, self.features] 
 
 
 class BrewClassifier(object):
