@@ -82,6 +82,7 @@ class ICSBagging(PoolGenerator):
         negative_label = y[~mask][0]
 
         clfs = []
+        sets_cX, sets_cy = [], []
         for i in range(K):
             cX, cy = [], []
             for j in range(X.shape[0]):
@@ -103,7 +104,9 @@ class ICSBagging(PoolGenerator):
                 idx_2 = np.random.random_integers(0, len(X[~mask])- 1)
                 cX[idx_1] = X[~mask][idx_2]
                 cy[idx_1] = negative_label
+            #print len(cX), len(cy), X.shape[0], len(X), np.bincount(cy)
 
+            sets_cX, sets_cy = sets_cX + [cX], sets_cy + [cy]
             clf = sklearn.base.clone(self.base_classifier)
             clfs = clfs + [clf.fit(cX, cy)]
 
@@ -111,9 +114,9 @@ class ICSBagging(PoolGenerator):
 
 
     def fit(self, X, y):
-        if self.validation_X == None and self.validation_y == None:
-            self.validation_X = X
-            self.validation_y = y
+        #if self.validation_X == None and self.validation_y == None:
+        self.validation_X = X
+        self.validation_y = y
 
         self.classes_ = set(y)
         self.ensemble = Ensemble()
@@ -124,6 +127,9 @@ class ICSBagging(PoolGenerator):
         for i in range(1, self.n_classifiers):
             clfs = self.bootstrap_classifiers(X, y, self.K, self._calc_pos_prob())
             self.ensemble.add(max(clfs, key=lambda clf: self.fitness(clf)))
+
+        self.validation_X = None
+        self.validation_y = None
         
         return self
 
