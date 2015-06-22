@@ -23,7 +23,7 @@ class SmoteBagging(PoolGenerator):
     
     def __init__(self, base_classifier=None,
                 n_classifiers=100,
-                combination_rule='majority_vote', k=2):
+                combination_rule='majority_vote', k=5):
 
         #self.b = b
         self.k = k
@@ -112,7 +112,7 @@ class SmoteBagging(PoolGenerator):
             #print('classifier : {}'.format(i))
             #print('------------------------')
             #print('b = {}'.format(b))
-            data, target = self.smote_bootstrap_sample(X, y, b=b, k=self.k)
+            data, target = self.smote_bootstrap_sample(X, y, b=float(b), k=self.k)
             #print('data = {}'.format(data.shape))
             #print()
 
@@ -131,6 +131,84 @@ class SmoteBagging(PoolGenerator):
     def predict(self, X):
         out = self.ensemble.output(X)
         return self.combiner.combine(out)
+
+
+class SmoteBaggingNew(SmoteBagging):
+
+    def fit(self, X, y):
+
+        self.ensemble = Ensemble()
+
+        # this parameter should change between [10, 100] with
+        # increments of 10, for every classifier in the ensemble
+        b = 10
+
+        for i in range(self.n_classifiers):
+            #print()
+            #print('classifier : {}'.format(i))
+            #print('------------------------')
+            #print('b = {}'.format(b))
+            data, target = self.smote_bootstrap_sample(X, y, b=float(b), k=self.k)
+            #print('data = {}'.format(data.shape))
+            #print()
+
+            classifier = sklearn.base.clone(self.base_classifier)
+            classifier.fit(data, target)
+            
+            self.ensemble.add(classifier)
+
+            if b >= 100:
+                b = 10
+            else:
+                b += 10
+
+        return
+
+    def smote_bootstrap_sample(self, X, y, b, k):
+        
+        classes = np.unique(y)
+        count = np.bincount(y) # number of instances of each class
+
+        majority_class = count.argmax() # majority class
+        majority_count = count.max() # majority class
+
+        data = np.empty((0, X.shape[1]))
+        target = np.empty((0,))
+
+        class_data = X[(y==majority_class),:]
+        idx = np.random.choice(majority_count, (majority_count,))
+        data = np.concatenate((data, class_data[idx,:]))
+        target = np.concatenate((target, majority_class * np.ones((majority_count,))))
+    
+        minority_class = count.argmin()
+        minority_count = count.min()
+
+
+#        print majority_count
+        N_syn = int((majority_count) * (b/100))
+#        print N_syn
+        N_res = majority_count - N_syn
+#        print N_res
+        N_syn, N_res = N_res, N_syn
+
+        class_data = X[(y==minority_class),:]
+        idx = np.random.choice(class_data.shape[0], (N_res,))
+        sampled_min_data = class_data[idx,:]
+#        print sampled_min_data.shape
+        if N_syn > 0: 
+            N_smote = np.ceil(N_syn/minority_count) * 100
+            N_smote = 100 if N_smote < 100 else int(N_smote - N_smote % 100)
+            synthetic = smote(X[y==minority_class], N=int(N_smote), k=self.k)
+            
+            idx = np.random.choice(synthetic.shape[0], (N_syn,))
+            new_class_data = np.concatenate((sampled_min_data, synthetic[idx,:]))
+            data = np.concatenate((data, new_class_data))
+            target = np.concatenate((target, minority_class * np.ones((new_class_data.shape[0],))))
+        else:
+            data = np.concatenate((data, sampled_min_data))
+            target = np.concatenate((target, minority_class * np.ones((sampled_min_data.shape[0],))))
+
+        return data, target
 
 
 if __name__ == '__main__':
