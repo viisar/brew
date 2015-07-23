@@ -21,7 +21,7 @@ def kuncheva_q_statistics(oracle):
     for i in range(L):
         for j in range(i+1, L):
             a, b, c, d = __coefficients(oracle[:,[i,j]])
-            div[div_i] = float(a*d - b*c) / (a*d + b*c)
+            div[div_i] = float(a*d - b*c) / ((a*d + b*c) + 10e-24)
             div_i = div_i + 1
 
     return np.mean(div)
@@ -35,7 +35,7 @@ def kuncheva_correlation_coefficient_p(oracle):
     for i in range(L):
         for j in range(i+1, L):
             a, b, c, d = __coefficients(oracle[:,[i,j]])
-            div[div_i] = float((a*d - b*c)) / np.sqrt((a+b)*(c+d)*(a+c)*(b+d))
+            div[div_i] = float((a*d - b*c)) / (np.sqrt((a+b)*(c+d)*(a+c)*(b+d)))
             div_i = div_i + 1
 
     return np.mean(div)
@@ -56,7 +56,7 @@ def kuncheva_disagreement_measure(oracle):
 
 
 def kuncheva_agreement_measure(oracle):
-    return 1.0/kuncheva_disagreement_measure(oracle)
+    return 1.0/(kuncheva_disagreement_measure(oracle) + 10e-24)
 
 
 def kuncheva_double_fault_measure(oracle):
