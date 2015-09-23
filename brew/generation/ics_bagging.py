@@ -8,14 +8,10 @@ from sklearn.metrics import recall_score
 from brew.base import Ensemble
 from brew.combination.rules import majority_vote_rule
 from brew.combination.combiner import Combiner
-from brew.generation import Bagging
-
+from brew.preprocessing.smote import smote
 from brew.metrics.diversity.base import Diversity
-
 import brew.metrics.evaluation as evaluation
 import brew.metrics.diversity.non_paired as non_paired
-
-from brew.preprocessing.smote import smote
 
 from .base import PoolGenerator
 
