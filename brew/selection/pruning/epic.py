@@ -1,15 +1,19 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
-from brew import Ensemble
+
+from brew.base import Ensemble
+from .base import Prunner
 
 
-class EPIC(object):
+class EPIC(Prunner):
 
     def __init__(self):
         pass
 
-    def fit(self, ensemble, X, y, classes):
+    def fit(self, ensemble, X, y):
         classifiers = ensemble.classifiers
-        self.classes_ = classes
+        self.classes_ = list(set(y))
         V = np.zeros((y.shape[0], len(self.classes_)))
         C = classifiers
 
@@ -47,14 +51,11 @@ class EPIC(object):
             OL = OL + [[c_i, IC]]
             
         OL = sorted(OL, key=lambda e: e[1], reverse=True)
-        self.ensemble = list(zip(*OL)[0])
+        self.classifiers = list(zip(*OL)[0])
         return self
 
 
     def get(self, p=0.1):
-        return self.ensemble[:int(p*len(self.ensemble))]
-
-
-
+        return self.classifiers[:int(p*len(self.classifiers))]
 
 
