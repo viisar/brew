@@ -40,7 +40,8 @@ setup(
         'brew.metrics.diversity',
         'brew.preprocessing',
         'brew.selection',
-        'brew.selection.dynamic'
+        'brew.selection.dynamic',
+        'brew.selection.pruning'
     ],
     package_dir={'brew': 'brew'},
     include_package_data=True,
