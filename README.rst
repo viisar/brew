@@ -34,10 +34,11 @@ Features
 --------
 * Dynamic Classifier Selection: OLA, LCA, A Priori, A Posteriori.
 * Dynamic Ensemble Selection: KNORA E and KNORA U.
-* Oversampling: SMOTE.
 * Ensemble Combination Rules: majority vote, min, max, mean and median.
 * Ensemble Diversity Metrics: Entropy Measure E, Kohavi Wolpert Variance, Q Statistics, Correlation Coefficient p, Disagreement Measure, Agreement Measure, Double Fault Measure.
-* Ensemble Classifier Generators: Bagging (sklearn wrapper), Random Subspace (sklearn wrapper), SMOTE Bagging.
+* Ensemble Classifier Generators: Bagging, Random Subspace, SMOTEBagging, ICS-Bagging, SMOTE-ICS-Bagging.
+* Ensemble Pruning: EPIC.
+* Oversampling: SMOTE.
 
 
 Important References
