@@ -86,7 +86,7 @@ class OLA(DCS):
             pred = np.asarray(pred).flatten()
 
             bincount = np.bincount(pred)
-            if options != None:
+            if options is not None:
                 for i in range(len(bincount)):
                     bincount[i] = bincount[i] if i in options else 0
 
@@ -95,7 +95,7 @@ class OLA(DCS):
             count = len(votes)
             if count == 1:
                 return Ensemble([classifiers[np.argmax(pred == imx)]]), None
-            elif options == None:
+            elif options is None:
                 options = votes
 
         return Ensemble([classifiers[np.argmax(scores)]]), None
