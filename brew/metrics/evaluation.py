@@ -1,4 +1,5 @@
 import sklearn
+import sklearn.metrics
 
 
 class Evaluator(object):
