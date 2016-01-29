@@ -194,7 +194,7 @@ class Ensemble(object):
     def in_agreement(self, x):
         prev = None
         for clf in self.classifiers:
-            tmp = clf.predict(x)
+            [tmp] = clf.predict(x)
             if tmp != prev:
                 return False
             prev = tmp
