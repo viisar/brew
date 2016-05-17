@@ -1,8 +1,6 @@
 import numpy as np
 
 from sklearn.ensemble import BaggingClassifier
-from sklearn.lda import LDA
-from sklearn.decomposition import PCA
 from sklearn.neighbors.classification import KNeighborsClassifier
 
 from abc import abstractmethod
