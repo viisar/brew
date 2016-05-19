@@ -140,7 +140,7 @@ class Ensemble(object):
         each element being the probability of a specific class label being right on a
         given sample according to one the classifiers. This mode can be used with
         any combination rule.
-
+        
         (3) 'votes': each classifier will return votes for each class label (i.e.
         a binary representation, where the chosen class label will have one vote
         and the other labels will have zero votes. The ensemble output will be
@@ -168,13 +168,15 @@ class Ensemble(object):
         else:
             # assumes that all classifiers were
             # trained with the same number of classes
-            n_classes = len(self.get_classes())
+            classes__ = self.get_classes()
+            n_classes = len(classes__)
             out = np.zeros((X.shape[0], n_classes, len(self.classifiers)))
 
             for i, c in enumerate(self.classifiers):
                 if mode == 'probs':
-                    tmp = c.predict_proba(X)
-                    out[:,:,i] = tmp
+                    probas = np.zeros((X.shape[0],n_classes))
+                    probas[:,list(c.classes_)] = c.predict_proba(X)
+                    out[:,:,i] = probas
 
                 elif mode == 'votes':
                     tmp = c.predict(X) # (n_samples,)
@@ -194,7 +196,7 @@ class Ensemble(object):
     def in_agreement(self, x):
         prev = None
         for clf in self.classifiers:
-            tmp = clf.predict(x)
+            [tmp] = clf.predict(x)
             if tmp != prev:
                 return False
             prev = tmp
@@ -203,6 +205,15 @@ class Ensemble(object):
 
     def __len__(self):
         return len(self.classifiers)
+
+    def fit(self, X, y):
+        '''
+        warning: this fit overrides previous generated base classifiers!
+        '''
+        for clf in self.classifiers:
+            clf.fit(X, y)
+
+        return self
 
 
 class EnsembleClassifier(object):
