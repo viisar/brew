@@ -4,7 +4,7 @@ import os
 import sys
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup
 
@@ -32,17 +32,7 @@ setup(
     author='Dayvid Victor <victor.dvro@gmail.com>, Thyago Porpino <thyago.porpino@gmail.com>',
     author_email='brew-python-devs@googlegroups.com',
     url='https://github.com/viisar/brew',
-    packages=[
-        'brew',
-        'brew.combination',
-        'brew.generation',
-        'brew.metrics',
-        'brew.metrics.diversity',
-        'brew.preprocessing',
-        'brew.selection',
-        'brew.selection.dynamic',
-        'brew.selection.pruning'
-    ],
+    packages=find_packages(),
     package_dir={'brew': 'brew'},
     include_package_data=True,
     install_requires=[
