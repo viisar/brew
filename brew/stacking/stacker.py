@@ -76,4 +76,10 @@ class EnsembleStackClassifier(object):
         out = self.stack.output(X)
         return self.combiner.combine(out)
 
+    def predict_proba(self, X):
+        out = self.stack.output(X)
+        return np.mean(out, axis=2)
+        
+
+
 
