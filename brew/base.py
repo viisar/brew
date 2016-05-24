@@ -227,6 +227,13 @@ class EnsembleClassifier(object):
 
         self.combiner = combiner
 
+    def fit(self, X, y):
+        self.ensemble.fit(X, y)
+
+    def predict_proba(self, X):
+        out = self.ensemble.output(X, mode='probs')
+        return np.mean(out, axis=2)
+
     def predict(self, X):
 
         # TODO: warn the user if mode of ensemble
