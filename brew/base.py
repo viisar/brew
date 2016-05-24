@@ -206,6 +206,15 @@ class Ensemble(object):
     def __len__(self):
         return len(self.classifiers)
 
+    def fit(self, X, y):
+        '''
+        warning: this fit overrides previous generated base classifiers!
+        '''
+        for clf in self.classifiers:
+            clf.fit(X, y)
+
+        return self
+
 
 class EnsembleClassifier(object):
 

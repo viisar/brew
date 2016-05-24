@@ -17,7 +17,7 @@ To use brew in a project::
 	
 	# create your Combiner
 	# the rules can be 'majority_vote', 'max', 'min', 'mean' or 'median'
-	comb = Combiner(rule='majority_vote')
+	comb = Combiner(rule='mean')
 	
 	# now create your ensemble classifier
 	ensemble_clf = EnsembleClassifier(ensemble=ens, combiner=comb)
