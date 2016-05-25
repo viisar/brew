@@ -2,6 +2,10 @@
 brew
 =============================
 
+.. image:: https://badges.gitter.im/viisar/brew.svg
+   :alt: Join the chat at https://gitter.im/viisar/brew
+   :target: https://gitter.im/viisar/brew?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 .. image:: https://badge.fury.io/py/brew.png
     :target: http://badge.fury.io/py/brew
 
