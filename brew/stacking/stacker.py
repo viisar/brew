@@ -1,6 +1,7 @@
 import numpy as np
 
 from brew.base import Ensemble
+from brew.combination.combiner import Combiner
 
 from sklearn import cross_validation
 
