@@ -5,9 +5,6 @@ brew
 .. image:: https://badge.fury.io/py/brew.png
     :target: http://badge.fury.io/py/brew
 
-.. image:: https://pypip.in/d/brew/badge.png
-    :target: https://pypi.python.org/pypi/brew
-
 .. image:: https://travis-ci.org/viisar/brew.png?branch=master
     :target: https://travis-ci.org/viisar/brew
 
@@ -26,10 +23,9 @@ brew
 
 -----
 
-The aim of this project is to provide a structure for Ensembling, Stacking, 
+| The aim of this project is to provide an easy API for Ensembling, Stacking, 
 | Blending, Ensemble Generation, Ensemble Pruning, Dynamic Classifier Selection, 
 | and Dynamic Ensemble Selection.
-
 
 -----
 
