@@ -32,7 +32,7 @@ setup(
     author='Dayvid Victor <victor.dvro@gmail.com>, Thyago Porpino <thyago.porpino@gmail.com>',
     author_email='brew-python-devs@googlegroups.com',
     url='https://github.com/viisar/brew',
-    packages=find_packages(),
+    packages=find_packages(where='.', exclude=('test')),
     package_dir={'brew': 'brew'},
     include_package_data=True,
     install_requires=[

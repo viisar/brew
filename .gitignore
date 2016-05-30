@@ -1,6 +1,7 @@
 notebook
 *.py[cod]
 *.swp
+.cache
 
 # C extensions
 *.so
