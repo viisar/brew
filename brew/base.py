@@ -234,6 +234,41 @@ class EnsembleClassifier(object):
         out = self.ensemble.output(X, mode='probs')
         return np.mean(out, axis=2)
 
+    def predict_proba(self, X):
+
+        # TODO: warn the user if mode of ensemble
+        # output excludes the chosen combiner?
+
+        if self.selector is None:
+            out = self.ensemble.output(X, mode='probs')
+            return np.mean(out, axis=2)
+        else:
+            y = []
+
+            for i in range(X.shape[0]):
+                ensemble, weights = self.selector.select(self.ensemble, X[i,:][np.newaxis,:])
+                    
+                if weights is not None: # use the ensemble with weights
+                    out = ensemble.output(X[i,:][np.newaxis,:])
+                    
+                    # apply weights
+                    for i in range(out.shape[2]):
+                        out[:,:,i] = out[:,:,i] * weights[i]
+
+                    return np.mean(out, axis=2)
+
+                    #[tmp] = self.combiner.combine(out)
+                    #y.append(tmp)
+                    
+                else: # use the ensemble, but ignore the weights
+                    out = ensemble.output(X[i,:][np.newaxis,:])
+                    [tmp] = self.combiner.combine(out)
+                    y.append(tmp)
+
+        return np.asarray(y)
+
+
+
     def predict(self, X):
 
         # TODO: warn the user if mode of ensemble
@@ -282,10 +317,5 @@ def single_best(ensemble, X, y_true, metric=auc_score):
     for i in range(scores.shape[0]):
         scores[i] = metric(out[:,i], y_true)
     return np.max(scores)
-
-
-
-
-
 
 
