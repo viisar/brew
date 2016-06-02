@@ -230,16 +230,16 @@ class EnsembleClassifier(object):
     def fit(self, X, y):
         self.ensemble.fit(X, y)
 
-    def predict_proba(self, X):
-        out = self.ensemble.output(X, mode='probs')
-        return np.mean(out, axis=2)
+#    def predict_proba(self, X):
+#        out = self.ensemble.output(X, mode='probs')
+#        return np.mean(out, axis=2)
 
     def predict(self, X):
 
         # TODO: warn the user if mode of ensemble
         # output excludes the chosen combiner?
 
-        if self.selector == None:
+        if self.selector is None:
             out = self.ensemble.output(X)
             y = self.combiner.combine(out)
 
@@ -268,6 +268,39 @@ class EnsembleClassifier(object):
         return np.asarray(y)
 
 
+    def predict_proba(self, X):
+
+        # TODO: warn the user if mode of ensemble
+        # output excludes the chosen combiner?
+
+        if self.selector is None:
+            out = self.ensemble.output(X, mode='probs')
+            return np.mean(out, axis=2)
+
+        else:
+            out_full = []
+
+            for i in range(X.shape[0]):
+                ensemble, weights = self.selector.select(self.ensemble, X[i,:][np.newaxis,:])
+                    
+                if weights is not None: # use the ensemble with weights
+                    out = ensemble.output(X[i,:][np.newaxis,:])
+                    
+                    # apply weights
+                    for i in range(out.shape[2]):
+                        out[:,:,i] = out[:,:,i] * weights[i]
+
+                    #[tmp] = self.combiner.combine(out)
+                    out_full.extend(list(np.mean(out, axis=2)))
+                    
+                else: # use the ensemble, but ignore the weights
+                    out = ensemble.output(X[i,:][np.newaxis,:])
+                    out_full.extend(list(np.mean(out, axis=2)))
+
+        #return np.asarray(y)
+        return np.array(out_full)
+
+
 def oracle(ensemble, X, y_true, metric=auc_score):
     out = ensemble.output(X, mode='labels')
     oracle = np.equal(out, y_true[:,np.newaxis])
@@ -276,16 +309,12 @@ def oracle(ensemble, X, y_true, metric=auc_score):
     y_pred[mask] = y_true[mask]
     return metric(y_pred, y_true)
 
+
 def single_best(ensemble, X, y_true, metric=auc_score):
     out = ensemble.output(X, mode='labels')
     scores = np.zeros(len(ensemble), dtype=float)
     for i in range(scores.shape[0]):
         scores[i] = metric(out[:,i], y_true)
     return np.max(scores)
-
-
-
-
-
 
 
