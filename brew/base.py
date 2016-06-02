@@ -1,5 +1,7 @@
 import numpy as np
 
+from sklearn.metrics import accuracy_score
+
 from brew.combination.combiner import Combiner
 from brew.metrics.evaluation import auc_score
 
@@ -334,6 +336,9 @@ class EnsembleClassifier(object):
 
         #return np.asarray(y)
         return np.array(out_full)
+
+    def score(self, X, y, sample_weight=None):
+        return accuracy_score(y, self.predict(X), sample_weight=sample_weight)
 
 
 def oracle(ensemble, X, y_true, metric=auc_score):
