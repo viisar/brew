@@ -1,7 +1,7 @@
 import numpy as np
 
-import brew.metrics.diversity.paired as paired
-import brew.metrics.diversity.non_paired as non_paired
+from brew.metrics.diversity import paired
+from brew.metrics.diversity import non_paired
 
 class Diversity(object):
     """Ensemble Diversity Calculator.

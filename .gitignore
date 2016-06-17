@@ -1,4 +1,4 @@
-notebook
+examples/.ipynb_checkpoints
 *.py[cod]
 *.swp
 .cache
