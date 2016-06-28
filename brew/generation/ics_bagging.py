@@ -6,12 +6,10 @@ import sklearn
 from sklearn.metrics import recall_score
 
 from brew.base import Ensemble
-from brew.combination.rules import majority_vote_rule
 from brew.combination.combiner import Combiner
 from brew.preprocessing.smote import smote
 from brew.metrics.diversity.base import Diversity
 import brew.metrics.evaluation as evaluation
-import brew.metrics.diversity.non_paired as non_paired
 
 from .base import PoolGenerator
 
@@ -19,7 +17,7 @@ class ICSBagging(PoolGenerator):
 
 
     def __init__(self, K=10, alpha=0.75, base_classifier=None, n_classifiers=100,
-            combination_rule='majority_vote', diversity_metric='e', max_samples=1.0,
+            combination_rule='majority_vote', diversity_metric='e',
             positive_label=1):
 
         self.K = K
@@ -121,7 +119,7 @@ class ICSBagging(PoolGenerator):
         clfs = self.bootstrap_classifiers(X, y, self.K, 0.5)
         self.ensemble.add(np.random.choice(clfs))
 
-        for i in range(1, self.n_classifiers):
+        for _ in range(1, self.n_classifiers):
             clfs = self.bootstrap_classifiers(X, y, self.K, self._calc_pos_prob())
             self.ensemble.add(max(clfs, key=lambda clf: self.fitness(clf)))
 
@@ -140,7 +138,7 @@ class ICSBaggingNew(PoolGenerator):
 
 
     def __init__(self, K=10, alpha=0.75, base_classifier=None, n_classifiers=100,
-            combination_rule='majority_vote', diversity_metric='e', max_samples=1.0,
+            combination_rule='majority_vote', diversity_metric='e',
             positive_label=1):
 
         self.K = K
@@ -274,12 +272,12 @@ class ICSBaggingNew(PoolGenerator):
 class SmoteICSBagging(ICSBagging):
 
     def __init__(self, K=10, alpha=0.75, base_classifier=None, n_classifiers=100,
-            combination_rule='majority_vote', diversity_metric='e', max_samples=1.0,
+            combination_rule='majority_vote', diversity_metric='e',
             positive_label=1, smote_k=5):
         self.smote_k = smote_k
         super(SmoteICSBagging, self).__init__(K=K, alpha=alpha, base_classifier=base_classifier, 
                 n_classifiers=n_classifiers, combination_rule=combination_rule, 
-                diversity_metric=diversity_metric, max_samples=max_samples, 
+                diversity_metric=diversity_metric,
                 positive_label=positive_label)
 
     def bootstrap_classifiers(self, X, y, K, pos_prob):

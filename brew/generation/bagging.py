@@ -19,7 +19,7 @@ class Bagging(PoolGenerator):
     def fit(self, X, y):
         self.ensemble = Ensemble()
 
-        for i in range(self.n_classifiers):
+        for _ in range(self.n_classifiers):
             # bootstrap
             idx = np.random.choice(X.shape[0], X.shape[0], replace=True)
             data, target = X[idx, :], y[idx]

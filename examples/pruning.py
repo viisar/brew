@@ -7,7 +7,7 @@ from sklearn.metrics import zero_one_loss
 from sklearn.cross_validation import train_test_split
 
 from brew.generation.bagging import Bagging
-from brew.base import EnsembleClassifier
+from brew.base import Ensemble, EnsembleClassifier
 from brew.selection.pruning.epic import EPIC
 
 N = 1000
