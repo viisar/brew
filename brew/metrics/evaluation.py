@@ -1,3 +1,5 @@
+import numpy as np
+
 import sklearn
 import sklearn.metrics
 
