@@ -5,13 +5,16 @@ brew
 .. image:: https://badge.fury.io/py/brew.png
     :target: http://badge.fury.io/py/brew
 
+.. image:: https://landscape.io/github/viisar/brew/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/viisar/brew/master
+   :alt: Code Health
+
 .. image:: https://travis-ci.org/viisar/brew.png?branch=master
     :target: https://travis-ci.org/viisar/brew
 
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :alt: Join the chat at https://gitter.im/viisar/brew
    :target: https://gitter.im/viisar/brew?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-
 
 
 **brew: A Multiple Classifier Systems API**
