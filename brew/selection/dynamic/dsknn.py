@@ -53,12 +53,15 @@ class DSKNN(DCS):
 
     References
     ----------
-    Giacinto, Giorgio, and Fabio Roli. "Dynamic classifier selection 
-    based on multiple classifier behaviour." Pattern Recognition 34.9 
-    (2001): 1879-1881.
+    Santana, Alixandre, et al. "A dynamic classifier selection method
+    to build ensembles using accuracy and diversity." 2006 Ninth
+    Brazilian Symposium on Neural Networks (SBRN'06). IEEE, 2006.
     """
     def __init__(self, Xval, yval, K=5, weighted=False, knn=None, 
             n_1=0.7, n_2=0.3):
+        if n_1 < 0 or n_2 < 0 or n_1 <= n_2:
+            raise Exception
+
         self.n_1 = n_1
         self.n_2 = n_2
         super(DSKNN, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
