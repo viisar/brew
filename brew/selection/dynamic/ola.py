@@ -85,7 +85,7 @@ class OLA(DCS):
             pred = [classifiers[i].predict(x) for i in d[score]]
             pred = np.asarray(pred).flatten()
 
-            bincount = np.bincount(pred)
+            bincount = np.bincount(pred.astype(int))
             if options is not None:
                 for i in range(len(bincount)):
                     bincount[i] = bincount[i] if i in options else 0

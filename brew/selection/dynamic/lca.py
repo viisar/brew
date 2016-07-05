@@ -109,7 +109,7 @@ class LCA(DCS):
             pred = [x_outputs[i] for i in d[score]]
             pred = np.asarray(pred).flatten()
 
-            bincount = np.bincount(pred)
+            bincount = np.bincount(pred.astype(int))
             if options != None:
                 for i in range(len(bincount)):
                     bincount[i] = bincount[i] if i in options else 0

@@ -4,6 +4,7 @@ from brew.selection.dynamic.lca import LCA
 from brew.selection.dynamic.lca import LCA2
 from brew.selection.dynamic.knora import *
 from brew.selection.dynamic.probabilistic import *
+from brew.selection.dynamic.mcb import MCB
 
 from brew.generation.bagging import Bagging
 from brew.base import EnsembleClassifier
@@ -35,10 +36,11 @@ dcs_list = [OLA(X_val, y_val),
             KNORA_ELIMINATE(X_val, y_val), 
             KNORA_UNION(X_val, y_val),
             APriori(X_val, y_val),
-            APosteriori(X_val, y_val)
+            APosteriori(X_val, y_val),
+            MCB(X_val, y_val)
             ]
 
-dcs_names = ['ola', 'lca', 'KE', 'KU', 'aPriori', 'aPosteriori']
+dcs_names = ['ola', 'lca', 'KE', 'KU', 'aPriori', 'aPosteriori', 'MCB']
 
 
 print('-----------------ERROR RATE----------------------')
