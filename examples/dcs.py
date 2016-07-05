@@ -5,6 +5,7 @@ from brew.selection.dynamic.lca import LCA2
 from brew.selection.dynamic.knora import *
 from brew.selection.dynamic.probabilistic import *
 from brew.selection.dynamic.mcb import MCB
+from brew.selection.dynamic.dsknn import DSKNN
 
 from brew.generation.bagging import Bagging
 from brew.base import EnsembleClassifier
@@ -27,7 +28,7 @@ for i, yi in enumerate(set(y)):
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.10)
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.30)
 
-bag = Bagging(base_classifier=dt, n_classifiers=10)
+bag = Bagging(base_classifier=dt, n_classifiers=100)
 bag.fit(X_val, y_val)
 
 
@@ -37,10 +38,11 @@ dcs_list = [OLA(X_val, y_val),
             KNORA_UNION(X_val, y_val),
             APriori(X_val, y_val),
             APosteriori(X_val, y_val),
-            MCB(X_val, y_val)
+            MCB(X_val, y_val),
+            DSKNN(X_val, y_val)
             ]
 
-dcs_names = ['ola', 'lca', 'KE', 'KU', 'aPriori', 'aPosteriori', 'MCB']
+dcs_names = ['OLA', 'LCA', 'KE', 'KU', 'aPriori', 'aPosteriori', 'MCB', 'DSKNN']
 
 
 print('-----------------ERROR RATE----------------------')
