@@ -32,35 +32,12 @@ brew
 
 Features
 ===========
-* General
-  - Ensembling
-  - Stacking and Blending
-* Ensemble Classifier Generators
-  - Bagging
-  - Random Subspace
-  - SMOTE-Bagging
-  - ICS-Bagging
-  - SMOTE-ICS-Bagging
-* Dynamic Selection
-  - Overall Local Accuracy (OLA)
-  - Local Class Accuracy (LCA)
-  - Multiple Classifier Behavior (MCB)
-  - K-Nearest Oracles Eliminate (KNORA-E) 
-  - K-Nearest Oracles Union (KNORA-U)
-  - A Priori Dynamic Selection
-  - A Posteriori Dynamic Selection
-* Ensemble Combination Rules
-  - majority vote, min, max, mean and median.
-* Ensemble Diversity Metrics
-  - Entropy Measure E
-  - Kohavi Wolpert Variance
-  - Q Statistics
-  - Correlation Coefficient p
-  - Disagreement Measure
-  - Agreement Measure
-  - Double Fault Measure
-* Ensemble Pruning
-  - Ensemble Pruning via Individual Contribution (EPIC)
+* General: Ensembling, Stacking and Blending.
+* Ensemble Classifier Generators: Bagging, Random Subspace, SMOTE-Bagging, ICS-Bagging, SMOTE-ICS-Bagging.
+* Dynamic Selection: Overall Local Accuracy (OLA), Local Class Accuracy (LCA), Multiple Classifier Behavior (MCB), K-Nearest Oracles Eliminate (KNORA-E), K-Nearest Oracles Union (KNORA-U), A Priori Dynamic Selection, A Posteriori Dynamic Selection, Dynamic Selection KNN (DSKNN).
+* Ensemble Combination Rules: majority vote, min, max, mean and median.
+* Ensemble Diversity Metrics: Entropy Measure E, Kohavi Wolpert Variance, Q Statistics, Correlation Coefficient p, Disagreement Measure, Agreement Measure, Double Fault Measure.
+* Ensemble Pruning: Ensemble Pruning via Individual Contribution (EPIC).
 
 Example
 ============
