@@ -5,7 +5,6 @@ from sklearn.metrics import accuracy_score
 from brew.combination.combiner import Combiner
 from brew.metrics.evaluation import auc_score
 
-
 def transform2votes(output, n_classes):
 
     n_samples = output.shape[0]
@@ -18,7 +17,6 @@ def transform2votes(output, n_classes):
         votes[i, idx] = 1
 
     return votes.astype('int')
-
 
 class Transformer(object):
     def __init__(self):
@@ -39,7 +37,6 @@ class FeatureSubsamplingTransformer(Transformer):
         else:
             return X[:, self.features] 
 
-
 class BrewClassifier(object):
     def __init__(self, classifier=None, transformer=None):
         self.transformer = transformer
@@ -59,9 +56,7 @@ class BrewClassifier(object):
     def predict_proba(self, X):
         X = self.transformer.apply(X)
         y = self.classifier.predict_proba(X)
-
         return y
-        
 
 class Ensemble(object):
     """Class that represents a collection of classifiers.
@@ -158,8 +153,6 @@ class Ensemble(object):
         mode: string, optional(default='labels')
                 The type of output given by each classifier.  
                 'labels' | 'probs' | 'votes'
-            
-            
         """
 
         if mode == 'labels':
@@ -194,7 +187,6 @@ class Ensemble(object):
 
         return out
 
-
     def in_agreement(self, x):
         prev = None
         for clf in self.classifiers:
@@ -217,7 +209,6 @@ class Ensemble(object):
 
         return self
 
-
 class EnsembleClassifier(object):
 
     def __init__(self, ensemble=None, selector=None, combiner=None):
@@ -232,45 +223,6 @@ class EnsembleClassifier(object):
     def fit(self, X, y):
         self.ensemble.fit(X, y)
 
-#    def predict_proba(self, X):
-#        out = self.ensemble.output(X, mode='probs')
-#        return np.mean(out, axis=2)
-
-    def predict_proba(self, X):
-
-        # TODO: warn the user if mode of ensemble
-        # output excludes the chosen combiner?
-
-        if self.selector is None:
-            out = self.ensemble.output(X, mode='probs')
-            return np.mean(out, axis=2)
-        else:
-            y = []
-
-            for i in range(X.shape[0]):
-                ensemble, weights = self.selector.select(self.ensemble, X[i,:][np.newaxis,:])
-                    
-                if weights is not None: # use the ensemble with weights
-                    out = ensemble.output(X[i,:][np.newaxis,:])
-                    
-                    # apply weights
-                    for i in range(out.shape[2]):
-                        out[:,:,i] = out[:,:,i] * weights[i]
-
-                    return np.mean(out, axis=2)
-
-                    #[tmp] = self.combiner.combine(out)
-                    #y.append(tmp)
-                    
-                else: # use the ensemble, but ignore the weights
-                    out = ensemble.output(X[i,:][np.newaxis,:])
-                    [tmp] = self.combiner.combine(out)
-                    y.append(tmp)
-
-        return np.asarray(y)
-
-
-
     def predict(self, X):
 
         # TODO: warn the user if mode of ensemble
@@ -279,7 +231,6 @@ class EnsembleClassifier(object):
         if self.selector is None:
             out = self.ensemble.output(X)
             y = self.combiner.combine(out)
-
 
         else:
             y = []
@@ -340,7 +291,6 @@ class EnsembleClassifier(object):
     def score(self, X, y, sample_weight=None):
         return accuracy_score(y, self.predict(X), sample_weight=sample_weight)
 
-
 def oracle(ensemble, X, y_true, metric=auc_score):
     out = ensemble.output(X, mode='labels')
     oracle = np.equal(out, y_true[:,np.newaxis])
@@ -348,7 +298,6 @@ def oracle(ensemble, X, y_true, metric=auc_score):
     y_pred = out[:,0]
     y_pred[mask] = y_true[mask]
     return metric(y_pred, y_true)
-
 
 def single_best(ensemble, X, y_true, metric=auc_score):
     out = ensemble.output(X, mode='labels')

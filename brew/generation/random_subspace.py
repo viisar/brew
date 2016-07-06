@@ -1,17 +1,16 @@
+import numpy as np
+
+import sklearn
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier
+
 from brew.base import Ensemble
 from brew.base import FeatureSubsamplingTransformer
 from brew.base import BrewClassifier
 from brew.combination.combiner import Combiner
-
-from sklearn.tree import DecisionTreeClassifier
-import sklearn
-
-from brew.combination.combiner import Combiner
 from brew.combination.rules import majority_vote_rule
 from .base import PoolGenerator
 
-import numpy as np
-from sklearn.ensemble import BaggingClassifier
 
 class RandomSubspace(PoolGenerator):
 
