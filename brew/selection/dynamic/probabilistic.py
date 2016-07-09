@@ -122,7 +122,18 @@ class APriori(Probabilistic):
 
     def probabilities(self, clf, nn_X, nn_y, distances, x):
         # in the A Priori method, the 'x' is not used
-        proba = clf.predict_proba(nn_X)
+        if hasattr(clf, 'predict_proba'):
+            proba = clf.predict_proba(nn_X)
+        elif hasattr(clf, 'decision_function'):
+            dc = clf.decision_function(nn_X)
+            if len(dc.shape) == 1:
+                cl = clf.predict(nn_X).astype(int)
+                sc = np.zeros((dc.shape[0],2))
+                for i in range(len(nn_X)):
+                    sc[i,cl[i]] = dc[i]
+                dc = sc
+            proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:,np.newaxis]
+
         proba = np.hstack((proba, np.zeros((proba.shape[0],1))))
 
         d = dict(list(enumerate(clf.classes_)))
@@ -204,7 +215,18 @@ class APosteriori(Probabilistic):
         [idx_w_l] = np.where(nn_y == w_l)
 
         # in the A Posteriori method the 'x' is used
-        proba = clf.predict_proba(nn_X)
+        if hasattr(clf, 'predict_proba'):
+            proba = clf.predict_proba(nn_X)
+        elif hasattr(clf, 'decision_function'):
+            dc = clf.decision_function(nn_X)
+            if len(dc.shape) == 1:
+                cl = clf.predict(nn_X).astype(int)
+                sc = np.zeros((dc.shape[0],2))
+                for i in range(len(nn_X)):
+                    sc[i,cl[i]] = dc[i]
+                dc = sc
+            proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:,np.newaxis]
+
         proba = np.hstack((proba, np.zeros((proba.shape[0],1))))
 
         # if the classifier never classifies as class w_l, P(w_l|psi_i) = 0

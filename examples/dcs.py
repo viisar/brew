@@ -11,15 +11,18 @@ from brew.generation.bagging import Bagging
 from brew.base import EnsembleClassifier
 
 import numpy as np
+np.seterr(all='print')
 
 import sklearn
 from sklearn import datasets
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import Perceptron
 from sklearn.metrics import zero_one_loss
 from sklearn.cross_validation import train_test_split
 
 N = 1000
-dt = DecisionTreeClassifier(max_depth=9, min_samples_leaf=1)
+#dt = DecisionTreeClassifier(max_depth=9, min_samples_leaf=1)
+dt = Perceptron()
 
 X, y = datasets.make_hastie_10_2(n_samples=N, random_state=1)
 for i, yi in enumerate(set(y)):

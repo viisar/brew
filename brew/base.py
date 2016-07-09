@@ -9,14 +9,15 @@ def transform2votes(output, n_classes):
 
     n_samples = output.shape[0]
 
-    votes = np.zeros((n_samples, n_classes))
-
+    votes = np.zeros((n_samples, n_classes), dtype=int)
     # uses the predicted label as index for the vote matrix
-    for i in range(n_samples):
-        idx = output[i]
-        votes[i, idx] = 1
+    # for i in range(n_samples):
+    #    idx = int(output[i])
+    #    votes[i, idx] = 1
+    votes[np.arange(n_samples), output.astype(int)] = 1
+    #assert np.equal(votes2.astype(int), votes.astype(int)).all()
 
-    return votes.astype('int')
+    return votes.astype(int)
 
 class Transformer(object):
     def __init__(self):
