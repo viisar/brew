@@ -78,6 +78,9 @@ class DSKNN(DCS):
         if isinstance(self.n_2, float):
             n_sel_2 = int(n_sel_2 * len(ensemble))
 
+        n_sel_1 = max(n_sel_1, 1)
+        n_sel_2 = max(n_sel_2, 1)
+
         # intialize variables
         # the the indexes of the KNN of x
         classifiers = ensemble.classifiers

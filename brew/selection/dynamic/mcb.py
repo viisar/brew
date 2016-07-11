@@ -90,7 +90,7 @@ class MCB(DCS):
         # if best classifier is significantly better
         # use best_classifier
         best_i = np.argmax(scores)
-        best_j = np.argmax(np.arange(len(y))[np.arange(len(y)) != best_i])
+        best_j = np.argmax(scores[np.arange(len(scores)) != best_i])
         if scores[best_i] - scores[best_j] >= self.significance_threshold:
             best_classifier = ensemble.classifiers[best_i]
             return Ensemble(classifiers=[best_classifier]), None
