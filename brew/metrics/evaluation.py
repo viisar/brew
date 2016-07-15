@@ -5,7 +5,7 @@ import sklearn.metrics
 
 
 class Evaluator(object):
-    
+
     def __init__(self, metric='auc'):
         if metric == 'auc':
             self.metric = auc_score
@@ -24,11 +24,9 @@ def auc_score(y_true, y_pred, positive_label=1):
         y_true, y_pred, pos_label=positive_label)
     return sklearn.metrics.auc(fp_rate, tp_rate)
 
+
 def acc_score(y_true, y_pred, positive_label=1):
     if hasattr(sklearn.metrics, 'accuracy_score'):
         return sklearn.metrics.accuracy_score(y_true, y_pred)
 
-    return float(np.sum(y_true == y_pred))/y_true.shape[0]
-
-
-
+    return float(np.sum(y_true == y_pred)) / y_true.shape[0]

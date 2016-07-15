@@ -13,12 +13,17 @@ import brew.metrics.evaluation as evaluation
 
 from .base import PoolGenerator
 
+
 class ICSBagging(PoolGenerator):
 
-
-    def __init__(self, K=10, alpha=0.75, base_classifier=None, n_classifiers=100,
-            combination_rule='majority_vote', diversity_metric='e',
-            positive_label=1):
+    def __init__(self,
+                 K=10,
+                 alpha=0.75,
+                 base_classifier=None,
+                 n_classifiers=100,
+                 combination_rule='majority_vote',
+                 diversity_metric='e',
+                 positive_label=1):
 
         self.K = K
         self.alpha = alpha
@@ -38,15 +43,13 @@ class ICSBagging(PoolGenerator):
         self.validation_X = None
         self.validation_y = None
 
-
     def set_validation(self, X, y):
         self.validation_X = X
         self.validation_y = y
 
-
     def fitness(self, classifier):
         '''
-        #TODO normalize diversity metric.
+        # TODO normalize diversity metric.
         '''
         self.ensemble.add(classifier)
         out = self.ensemble.output(self.validation_X)
@@ -55,22 +58,22 @@ class ICSBagging(PoolGenerator):
 
         auc = evaluation.auc_score(y_true, y_pred)
         div = self.diversity.calculate(self.ensemble,
-                self.validation_X, self.validation_y)
+                                       self.validation_X, self.validation_y)
 
-        #diversity = entropy_measure_e(self.ensemble,
+        # diversity = entropy_measure_e(self.ensemble,
         #        self.validation_X, self.validation_y)
 
         self.ensemble.classifiers.pop()
         return self.alpha * auc + (1.0 - self.alpha) * div
 
-
     def _calc_pos_prob(self):
         y_pred = self.combiner.combine(self.ensemble.output(self.validation_X))
         mask = self.positive_label == self.validation_y
-        pos_acc = float(sum(y_pred[mask] == self.validation_y[mask]))/len(self.validation_y[mask])
-        neg_acc = float(sum(y_pred[~mask] == self.validation_y[~mask]))/len(self.validation_y[~mask])
+        pos_acc = float(sum(y_pred[mask] == self.validation_y[
+                        mask])) / len(self.validation_y[mask])
+        neg_acc = float(sum(y_pred[~mask] == self.validation_y[
+                        ~mask])) / len(self.validation_y[~mask])
         return 1.0 - (pos_acc / (pos_acc + neg_acc))
-
 
     def bootstrap_classifiers(self, X, y, K, pos_prob):
         mask = self.positive_label == y
@@ -89,17 +92,17 @@ class ICSBagging(PoolGenerator):
                     idx = np.random.random_integers(0, len(X[~mask]) - 1)
                     cX = cX + [X[~mask][idx]]
                     cy = cy + [negative_label]
-            if not self.positive_label in cy:
+            if self.positive_label not in cy:
                 idx_1 = np.random.random_integers(0, len(cX) - 1)
-                idx_2 = np.random.random_integers(0, len(X[mask])- 1)
+                idx_2 = np.random.random_integers(0, len(X[mask]) - 1)
                 cX[idx_1] = X[mask][idx_2]
                 cy[idx_1] = self.positive_label
-            elif not negative_label in cy:
+            elif negative_label not in cy:
                 idx_1 = np.random.random_integers(0, len(cX) - 1)
-                idx_2 = np.random.random_integers(0, len(X[~mask])- 1)
+                idx_2 = np.random.random_integers(0, len(X[~mask]) - 1)
                 cX[idx_1] = X[~mask][idx_2]
                 cy[idx_1] = negative_label
-            #print len(cX), len(cy), X.shape[0], len(X), np.bincount(cy)
+            # print len(cX), len(cy), X.shape[0], len(X), np.bincount(cy)
 
             sets_cX, sets_cy = sets_cX + [cX], sets_cy + [cy]
             clf = sklearn.base.clone(self.base_classifier)
@@ -107,9 +110,8 @@ class ICSBagging(PoolGenerator):
 
         return clfs
 
-
     def fit(self, X, y):
-        #if self.validation_X == None and self.validation_y == None:
+        # if self.validation_X == None and self.validation_y == None:
         self.validation_X = X
         self.validation_y = y
 
@@ -120,14 +122,14 @@ class ICSBagging(PoolGenerator):
         self.ensemble.add(np.random.choice(clfs))
 
         for _ in range(1, self.n_classifiers):
-            clfs = self.bootstrap_classifiers(X, y, self.K, self._calc_pos_prob())
+            clfs = self.bootstrap_classifiers(
+                X, y, self.K, self._calc_pos_prob())
             self.ensemble.add(max(clfs, key=lambda clf: self.fitness(clf)))
 
         self.validation_X = None
         self.validation_y = None
-        
-        return self
 
+        return self
 
     def predict(self, X):
         out = self.ensemble.output(X)
@@ -136,10 +138,14 @@ class ICSBagging(PoolGenerator):
 
 class ICSBaggingNew(PoolGenerator):
 
-
-    def __init__(self, K=10, alpha=0.75, base_classifier=None, n_classifiers=100,
-            combination_rule='majority_vote', diversity_metric='e',
-            positive_label=1):
+    def __init__(self,
+                 K=10,
+                 alpha=0.75,
+                 base_classifier=None,
+                 n_classifiers=100,
+                 combination_rule='majority_vote',
+                 diversity_metric='e',
+                 positive_label=1):
 
         self.K = K
         self.alpha = alpha
@@ -156,15 +162,13 @@ class ICSBaggingNew(PoolGenerator):
         self.validation_X = None
         self.validation_y = None
 
-
     def set_validation(self, X, y):
         self.validation_X = X
         self.validation_y = y
 
-
     def fitness(self, classifier):
         '''
-        #TODO normalize diversity metric.
+        # TODO normalize diversity metric.
         '''
         self.ensemble.add(classifier)
 
@@ -172,30 +176,34 @@ class ICSBaggingNew(PoolGenerator):
         y_true = self.validation_y
 
         auc = evaluation.auc_score(y_true, y_pred)
-        div = self.diversity.calculate(self.ensemble, self.validation_X, y_true)
+        div = self.diversity.calculate(
+            self.ensemble, self.validation_X, y_true)
 
-        self.ensemble.classifiers.pop() # create interface for this later
+        self.ensemble.classifiers.pop()  # create interface for this later
 
         return self.alpha * auc + (1.0 - self.alpha) * div
-
 
     def _calc_pos_prob(self):
         y_pred = self.predict(self.validation_X)
         y_true = self.validation_y
 
-        # obtaining recall scores for each label (assuming the labels are binary)
-        pos_acc = recall_score(y_true, y_pred, average='binary', pos_label=self.positive_label)
-        neg_acc = recall_score(y_true, y_pred, average='binary', pos_label=int(not self.positive_label))
+        # obtaining recall scores for each label (assuming the labels are
+        # binary)
+        pos_acc = recall_score(
+            y_true, y_pred, average='binary', pos_label=self.positive_label)
+        neg_acc = recall_score(y_true,
+                               y_pred,
+                               average='binary',
+                               pos_label=int(not self.positive_label))
 
         return neg_acc / (pos_acc + neg_acc)
-
 
     def bootstrap_classifiers(self, X, y, K, pos_prob):
         pos_idx = (y == self.positive_label)
         neg_idx = (y == int(not self.positive_label))
 
-        X_pos, y_pos = X[pos_idx,:], y[pos_idx] # positive examples
-        X_neg, y_neg = X[neg_idx,:], y[neg_idx] # negative examples
+        X_pos, _ = X[pos_idx, :], y[pos_idx]  # positive examples
+        X_neg, _ = X[neg_idx, :], y[neg_idx]  # negative examples
 
         classifiers = []
         for i in range(K):
@@ -203,33 +211,39 @@ class ICSBaggingNew(PoolGenerator):
             y_new = np.zeros(y.shape)
 
             for j in range(X.shape[0]):
-                
+
                 if pos_prob > np.random.random():
                     # add a randomly chosen positive example
                     idx = np.random.randint(X_pos.shape[0])
-                    X_new[j,:] = X_pos[idx,:]
+                    X_new[j, :] = X_pos[idx, :]
                     y_new[j] = self.positive_label
 
                 else:
                     # add a randomly chosen negative example
                     idx = np.random.randint(X_neg.shape[0])
-                    X_new[j,:] = X_neg[idx,:]
+                    X_new[j, :] = X_neg[idx, :]
                     y_new[j] = int(not self.positive_label)
 
-            # if no positive example is present, make sure you insert at least one
+            # if no positive example is present, make sure you insert at least
+            # one
             if not np.any(y_new == self.positive_label):
-                idx_new = np.random.randint(X_new.shape[0]) # chosen spot for replacement on new array
-                idx_pos = np.random.randint(X_pos.shape[0]) # chosen positive example index
+                # chosen spot for replacement on new array
+                idx_new = np.random.randint(X_new.shape[0])
+                # chosen positive example index
+                idx_pos = np.random.randint(X_pos.shape[0])
 
-                X_new[idx_new,:] = X_pos[idx_pos,:]
+                X_new[idx_new, :] = X_pos[idx_pos, :]
                 y_new[idx_new] = self.positive_label
-            
-            # if no negative example is present, make sure you insert at least one
-            elif not np.any(y_new == int(not self.positive_label)):
-                idx_new = np.random.randint(X_new.shape[0]) # chosen spot for replacement on new array
-                idx_neg = np.random.randint(X_neg.shape[0]) # chosen positive example index
 
-                X_new[idx_new,:] = X_neg[idx_neg,:]
+            # if no negative example is present, make sure you insert at least
+            # one
+            elif not np.any(y_new == int(not self.positive_label)):
+                # chosen spot for replacement on new array
+                idx_new = np.random.randint(X_new.shape[0])
+                # chosen positive example index
+                idx_neg = np.random.randint(X_neg.shape[0])
+
+                X_new[idx_new, :] = X_neg[idx_neg, :]
                 y_new[idx_new] = int(not self.positive_label)
 
             # train classifier with the bootstrapped data
@@ -240,9 +254,8 @@ class ICSBaggingNew(PoolGenerator):
 
         return classifiers
 
-
     def fit(self, X, y):
-        #if self.validation_X == None and self.validation_y == None:
+        # if self.validation_X == None and self.validation_y == None:
         self.validation_X = X
         self.validation_y = y
 
@@ -253,69 +266,74 @@ class ICSBaggingNew(PoolGenerator):
         self.ensemble.add(np.random.choice(clfs))
 
         for i in range(1, self.n_classifiers):
-            clfs = self.bootstrap_classifiers(X, y, self.K, self._calc_pos_prob())
+            clfs = self.bootstrap_classifiers(
+                X, y, self.K, self._calc_pos_prob())
             self.ensemble.add(max(clfs, key=lambda clf: self.fitness(clf)))
 
         self.validation_X = None
         self.validation_y = None
-        
-        return self
 
+        return self
 
     def predict(self, X):
         out = self.ensemble.output(X)
         return self.combiner.combine(out)
 
 
-
-
 class SmoteICSBagging(ICSBagging):
 
-    def __init__(self, K=10, alpha=0.75, base_classifier=None, n_classifiers=100,
-            combination_rule='majority_vote', diversity_metric='e',
-            positive_label=1, smote_k=5):
+    def __init__(self,
+                 K=10,
+                 alpha=0.75,
+                 base_classifier=None,
+                 n_classifiers=100,
+                 combination_rule='majority_vote',
+                 diversity_metric='e',
+                 positive_label=1,
+                 smote_k=5):
         self.smote_k = smote_k
-        super(SmoteICSBagging, self).__init__(K=K, alpha=alpha, base_classifier=base_classifier, 
-                n_classifiers=n_classifiers, combination_rule=combination_rule, 
-                diversity_metric=diversity_metric,
-                positive_label=positive_label)
+        super(SmoteICSBagging, self).__init__(K=K,
+                                              alpha=alpha,
+                                              base_classifier=base_classifier,
+                                              n_classifiers=n_classifiers,
+                                              combination_rule=combination_rule,  # noqa
+                                              diversity_metric=diversity_metric,  # noqa
+                                              positive_label=positive_label)
 
     def bootstrap_classifiers(self, X, y, K, pos_prob):
 
         clfs = []
-        
+
         for i in range(K):
             mask = (self.positive_label == y)
             negative_label = y[~mask][0]
 
             majority_size = np.sum(~mask)
             minority_size = len(mask) - majority_size
-            
-            # apply smote
-            N_smote = int(np.ceil(majority_size / minority_size) * 100 )
 
-            #print 'classifier: {}'.format(i)
-            #print '     maj size = {}'.format(majority_size)
-            #print '     min size = {}'.format(minority_size)
-            #print '     SMOTE:'
-            #print '         N_smote: {}'.format(N_smote)
-            #print '         T : {}'.format(X[mask].shape)
-            
-            X_syn = smote(X[mask],N=N_smote, k=self.smote_k)
-            #print '         out : {}'.format(X_syn.shape)
+            # apply smote
+            N_smote = int(np.ceil(majority_size / minority_size) * 100)
+
+            # print 'classifier: {}'.format(i)
+            # print '     maj size = {}'.format(majority_size)
+            # print '     min size = {}'.format(minority_size)
+            # print '     SMOTE:'
+            # print '         N_smote: {}'.format(N_smote)
+            # print '         T : {}'.format(X[mask].shape)
+
+            X_syn = smote(X[mask], N=N_smote, k=self.smote_k)
+            # print '         out : {}'.format(X_syn.shape)
             y_syn = self.positive_label * np.ones((X_syn.shape[0],))
 
             # use enough synthetic data to perfectly balance the binary problem
             n_missing = majority_size - minority_size
-            #print n_missing
+            # print n_missing
             idx = np.random.choice(X_syn.shape[0], n_missing)
-            
+
             # add synthetic data to original data
-            X_new = np.concatenate((X, X_syn[idx,]))
-            y_new = np.concatenate((y, y_syn[idx,]))
+            X_new = np.concatenate((X, X_syn[idx, ]))
+            y_new = np.concatenate((y, y_syn[idx, ]))
 
-
-    
             # use new mask
             mask = (self.positive_label == y_new)
 
@@ -331,14 +349,14 @@ class SmoteICSBagging(ICSBagging):
                     idx = np.random.random_integers(0, len(X_new[~mask]) - 1)
                     cX = cX + [X_new[~mask][idx]]
                     cy = cy + [negative_label]
-            if not self.positive_label in cy:
+            if self.positive_label not in cy:
                 idx_1 = np.random.random_integers(0, len(cX) - 1)
-                idx_2 = np.random.random_integers(0, len(X_new[mask])- 1)
+                idx_2 = np.random.random_integers(0, len(X_new[mask]) - 1)
                 cX[idx_1] = X_new[mask][idx_2]
                 cy[idx_1] = self.positive_label
-            elif not negative_label in cy:
+            elif negative_label not in cy:
                 idx_1 = np.random.random_integers(0, len(cX) - 1)
-                idx_2 = np.random.random_integers(0, len(X_new[~mask])- 1)
+                idx_2 = np.random.random_integers(0, len(X_new[~mask]) - 1)
                 cX[idx_1] = X_new[~mask][idx_2]
                 cy[idx_1] = negative_label
 
@@ -346,5 +364,3 @@ class SmoteICSBagging(ICSBagging):
             clfs = clfs + [clf.fit(cX, cy)]
 
         return clfs
-
-

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-
 import numpy as np
 
-from brew.base import Ensemble
 from .base import Prunner
 
 
@@ -28,7 +26,7 @@ class EPIC(Prunner):
                 prediction = c_i.predict(X[i])[0]
                 index = index_table[prediction]
                 V[i][index] = V[i][index] + 1
-            
+
         OL = []
         for c_i in C:
             IC = 0.0
@@ -41,21 +39,20 @@ class EPIC(Prunner):
                     alpha = 1 if index_pred == np.argmin(V[j]) else 0
                     beta = 1 if index_pred == np.argmax(V[j]) else 0
                     gamma = 0
-                
+
                 v_max = np.argmax(V[j])
                 v_sec = sorted(np.array(V[j]))[len(V[j]) - 2]
                 v_cor = V[j][index_table[y[j]]]
-             
-                IC = IC + alpha * (2*v_max - V[j][index_pred]) + beta * v_sec + gamma * (v_cor - V[j][index_pred] - v_max)
-                    
+
+                IC = IC + alpha * \
+                    (2 * v_max - V[j][index_pred]) + beta * v_sec + \
+                    gamma * (v_cor - V[j][index_pred] - v_max)
+
             OL = OL + [[c_i, IC]]
-            
+
         OL = sorted(OL, key=lambda e: e[1], reverse=True)
         self.classifiers = list(zip(*OL)[0])
         return self
 
-
     def get(self, p=0.1):
-        return self.classifiers[:int(p*len(self.classifiers))]
-
-
+        return self.classifiers[:int(p * len(self.classifiers))]
