@@ -1,9 +1,9 @@
-#TODO: add documentation header
+# TODO: add documentation header
 
 """
-[1] Kittler, J.; Hatef, M.; Duin, R.P.W.; Matas, J., "On combining classifiers,"
-    Pattern Analysis and Machine Intelligence, IEEE Transactions on , vol.20,
-    no.3, pp.226,239, Mar 1998
+[1] Kittler, J.; Hatef, M.; Duin, R.P.W.; Matas, J., "On combining
+    classifiers," Pattern Analysis and Machine Intelligence, IEEE
+    Transactions on , vol.20, no.3, pp.226,239, Mar 1998
 """
 
 import numpy as np

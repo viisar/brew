@@ -1,10 +1,9 @@
 import numpy as np
-from scipy.stats import rankdata
 
 from brew.base import Ensemble
-from brew.metrics.diversity import Diversity
 from brew.metrics.diversity.paired import kuncheva_double_fault_measure
 from .base import DCS
+
 
 class DSKNN(DCS):
     """DS-KNN
@@ -34,10 +33,11 @@ class DSKNN(DCS):
     >>> from sklearn.tree import DecisionTreeClassifier
     >>> import numpy as np
     >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0],
+                      [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
     >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
-    >>>
-    >>> bag = Bagging(base_classifier=DecisionTreeClassifier(max_depth=1, min_samples_leaf=1), n_classifiers=10)
+    >>> tree = DecisionTreeClassifier(max_depth=1, min_samples_leaf=1)
+    >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
     >>> bag.fit(X, y)
     >>>
     >>> sel = DSKNN(X, y, K=3)
@@ -57,15 +57,16 @@ class DSKNN(DCS):
     to build ensembles using accuracy and diversity." 2006 Ninth
     Brazilian Symposium on Neural Networks (SBRN'06). IEEE, 2006.
     """
-    def __init__(self, Xval, yval, K=5, weighted=False, knn=None, 
-            n_1=0.7, n_2=0.3):
+
+    def __init__(self, Xval, yval, K=5, weighted=False, knn=None,
+                 n_1=0.7, n_2=0.3):
         if n_1 < 0 or n_2 < 0 or n_1 <= n_2:
             raise Exception
 
         self.n_1 = n_1
         self.n_2 = n_2
-        super(DSKNN, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
-
+        super(DSKNN, self).__init__(
+            Xval, yval, K=K, weighted=weighted, knn=knn)
 
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):
@@ -90,14 +91,14 @@ class DSKNN(DCS):
         acc_scores = np.array([clf.score(X, y) for clf in classifiers])
 
         out = ensemble.output(X, mode='labels')
-        oracle = np.equal(out, y[:,np.newaxis])
+        oracle = np.equal(out, y[:, np.newaxis])
         div_scores = np.zeros(len(ensemble), dtype=float)
 
         for i in range(len(ensemble)):
             tmp = []
             for j in range(len(ensemble)):
                 if i != j:
-                    d = kuncheva_double_fault_measure(oracle[:,[i,j]])
+                    d = kuncheva_double_fault_measure(oracle[:, [i, j]])
                     tmp.append(d)
             div_scores[i] = np.mean(tmp)
 
@@ -108,4 +109,3 @@ class DSKNN(DCS):
 
         classifiers = [classifiers[i] for i in z]
         return Ensemble(classifiers=classifiers), None
-

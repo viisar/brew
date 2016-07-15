@@ -1,6 +1,6 @@
 
 class PoolGenerator(object):
-    
+
     def fit(self, X, y):
         pass
 
