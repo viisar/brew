@@ -3,6 +3,7 @@ import numpy as np
 from brew.metrics.diversity import paired
 from brew.metrics.diversity import non_paired
 
+
 class Diversity(object):
     """Ensemble Diversity Calculator.
 
@@ -21,10 +22,10 @@ class Diversity(object):
         - 'e' (Entropy Measure e) will use :meth:`kuncheva_entropy_measure`
         - 'kw' (Kohavi Wolpert Variance) will use :meth:`kuncheva_kw`
         - 'q' (Q Statistics) will use :meth:`kuncheva_q_statistics`
-        - 'p' (Correlation Coefficient p) will use :meth:`kuncheva_correlation_coefficient_p`
-        - 'disagreement' (Disagreement Measure) will use :meth:`kuncheva_disagreement_measure`
-        - 'agreement' (Agreement Measure) will use :meth:`kuncheva_agreement_measure`
-        - 'df' (Double Fault Measure) will use :meth:`kuncheva_double_fault_measure`
+        - 'p' (Correlation Coefficient p) will use :meth:`kuncheva_correlation_coefficient_p`  # noqa
+        - 'disagreement' (Disagreement Measure) will use :meth:`kuncheva_disagreement_measure`  # noqa
+        - 'agreement' (Agreement Measure) will use :meth:`kuncheva_agreement_measure` # noqa
+        - 'df' (Double Fault Measure) will use :meth:`kuncheva_double_fault_measure`  # noqa
 
     Examples
     --------
@@ -34,10 +35,11 @@ class Diversity(object):
     >>> from sklearn.tree import DecisionTreeClassifier
     >>> import numpy as np
     >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0],
+                      [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
     >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
-    >>>
-    >>> bag = Bagging(base_classifier=DecisionTreeClassifier(max_depth=1, min_samples_leaf=1), n_classifiers=10)
+    >>> tree = DecisionTreeClassifier(max_depth=1, min_samples_leaf=1)
+    >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
     >>> bag.fit(X, y)
     >>>
     >>> div = Diversity(metric='q')
@@ -52,14 +54,14 @@ class Diversity(object):
 
     References
     ----------
-    Brown, Gavin, et al. "Diversity creation methods: a survey and 
+    Brown, Gavin, et al. "Diversity creation methods: a survey and
     categorisation." Information Fusion 6.1 (2005): 5-20.
 
-    Kuncheva, Ludmila I., and Christopher J. Whitaker. "Measures of 
-    diversity in classifier ensembles and their relationship with 
+    Kuncheva, Ludmila I., and Christopher J. Whitaker. "Measures of
+    diversity in classifier ensembles and their relationship with
     the ensemble accuracy." Machine learning 51.2 (2003): 181-207.
 
-    Tang, E. Ke, Ponnuthurai N. Suganthan, and Xin Yao. "An analysis 
+    Tang, E. Ke, Ponnuthurai N. Suganthan, and Xin Yao. "An analysis
     of diversity measures." Machine Learning 65.1 (2006): 247-271.
     """
 
@@ -88,12 +90,10 @@ class Diversity(object):
         else:
             print('invalid metric')
 
-
     def calculate(self, ensemble, X, y):
         out = ensemble.output(X, mode='labels')
-        oracle = np.equal(out, y[:,np.newaxis])
+        oracle = np.equal(out, y[:, np.newaxis])
 
         D = self.metric(oracle)
 
         return D
-

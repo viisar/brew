@@ -4,11 +4,19 @@ import abc
 from brew.base import Ensemble
 from .base import DCS
 
+
 class Probabilistic(DCS):
 
-    def __init__(self, Xval, yval, K=5, weighted=False, knn=None, threshold=0.1):
+    def __init__(self,
+                 Xval,
+                 yval,
+                 K=5,
+                 weighted=False,
+                 knn=None,
+                 threshold=0.1):
         self.threshold = threshold
-        super(Probabilistic, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
+        super(Probabilistic, self).__init__(
+            Xval, yval, K=K, weighted=weighted, knn=knn)
 
     @abc.abstractmethod
     def probabilities(self, clf, nn_X, nn_y, distances, x):
@@ -17,11 +25,11 @@ class Probabilistic(DCS):
     def select(self, ensemble, x):
         selected_classifier = None
 
-        nn_X, nn_y, dists = self.get_neighbors(x, 
-                return_distance=True)
-        
+        nn_X, nn_y, dists = self.get_neighbors(x,
+                                               return_distance=True)
+
         idx_selected, prob_selected = [], []
-        
+
         all_probs = np.zeros(len(ensemble))
         for idx, clf in enumerate(ensemble.classifiers):
             prob = self.probabilities(clf, nn_X, nn_y, dists, x)
@@ -34,7 +42,7 @@ class Probabilistic(DCS):
         if len(prob_selected) == 0:
             prob_selected = [np.max(all_probs)]
             idx_selected = [np.argmax(all_probs)]
-        
+
         p_correct_m = max(prob_selected)
         m = np.argmax(prob_selected)
 
@@ -53,15 +61,15 @@ class Probabilistic(DCS):
             mask = np.array(np.array(diffs) < self.threshold, dtype=bool)
             i = np.random.choice(idx_selected[mask])
             selected_classifier = ensemble.classifiers[i]
-        
+
         return Ensemble([selected_classifier]), None
 
 
 class APriori(Probabilistic):
     """A Priori Classifier Selection.
 
-    The A Priori method is a dynamic classifier selection that 
-    uses a probabilistic-based measures for selecting the best 
+    The A Priori method is a dynamic classifier selection that
+    uses a probabilistic-based measures for selecting the best
     classifier.
 
     Attributes
@@ -84,13 +92,14 @@ class APriori(Probabilistic):
     >>> from brew.generation.bagging import Bagging
     >>> from brew.base import EnsembleClassifier
     >>>
-    >>> from sklearn.tree import DecisionTreeClassifier
+    >>> from sklearn.tree import DecisionTreeClassifier as Tree
     >>> import numpy as np
     >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] ,
+                      [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
     >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
-    >>>
-    >>> bag = Bagging(base_classifier=DecisionTreeClassifier(max_depth=1, min_samples_leaf=1), n_classifiers=10)
+    >>> tree = Tree(max_depth=1, min_samples_leaf=1)
+    >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
     >>> bag.fit(X, y)
     >>>
     >>> apriori = APriori(X, y, K=3)
@@ -107,18 +116,25 @@ class APriori(Probabilistic):
 
     References
     ----------
-    Giacinto, Giorgio, and Fabio Roli. "Methods for dynamic classifier 
-    selection." Image Analysis and Processing, 1999. Proceedings. 
+    Giacinto, Giorgio, and Fabio Roli. "Methods for dynamic classifier
+    selection." Image Analysis and Processing, 1999. Proceedings.
     International Conference on. IEEE, 1999.
 
-    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. 
-    "From dynamic classifier selection to dynamic ensemble selection." 
+    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr.
+    "From dynamic classifier selection to dynamic ensemble selection."
     Pattern Recognition 41.5 (2008): 1718-1731.
     """
-    def __init__(self, Xval, yval, K=5, weighted=False, knn=None, threshold=0.1):
-        self.threshold = threshold
-        super(APriori, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
 
+    def __init__(self,
+                 Xval,
+                 yval,
+                 K=5,
+                 weighted=False,
+                 knn=None,
+                 threshold=0.1):
+        self.threshold = threshold
+        super(APriori, self).__init__(
+            Xval, yval, K=K, weighted=weighted, knn=knn)
 
     def probabilities(self, clf, nn_X, nn_y, distances, x):
         # in the A Priori method, the 'x' is not used
@@ -128,22 +144,22 @@ class APriori(Probabilistic):
             dc = clf.decision_function(nn_X)
             if len(dc.shape) == 1:
                 cl = clf.predict(nn_X).astype(int)
-                sc = np.zeros((dc.shape[0],2))
+                sc = np.zeros((dc.shape[0], 2))
                 for i in range(len(nn_X)):
-                    sc[i,cl[i]] = dc[i]
+                    sc[i, cl[i]] = dc[i]
                 dc = sc
-            proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:,np.newaxis]
+            proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:, np.newaxis]
 
-        proba = np.hstack((proba, np.zeros((proba.shape[0],1))))
+        proba = np.hstack((proba, np.zeros((proba.shape[0], 1))))
 
         d = dict(list(enumerate(clf.classes_)))
-        col_idx = np.zeros(nn_y.size,dtype=int)
+        col_idx = np.zeros(nn_y.size, dtype=int)
         for i in range(nn_y.size):
             col_idx[i] = d[nn_y[i]] if nn_y[i] in d else proba.shape[1] - 1
 
         probabilities = proba[np.arange(col_idx.size), col_idx]
-        delta = 1./(distances + 10e-8)
-        
+        delta = 1. / (distances + 10e-8)
+
         p_correct = np.sum(probabilities * delta) / np.sum(delta)
         return p_correct
 
@@ -151,8 +167,8 @@ class APriori(Probabilistic):
 class APosteriori(Probabilistic):
     """A Priori Classifier Selection.
 
-    The A Priori method is a dynamic classifier selection that 
-    uses a probabilistic-based measures for selecting the best 
+    The A Priori method is a dynamic classifier selection that
+    uses a probabilistic-based measures for selecting the best
     classifier.
 
     Attributes
@@ -175,13 +191,15 @@ class APosteriori(Probabilistic):
     >>> from brew.generation.bagging import Bagging
     >>> from brew.base import EnsembleClassifier
     >>>
-    >>> from sklearn.tree import DecisionTreeClassifier
+    >>> from sklearn.tree import DecisionTreeClassifier as Tree
     >>> import numpy as np
     >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1],
+                      [-0.5, 0] , [0.5, 0], [1, 0],
+                      [0.8, 1], [0.8, -1]])
     >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
-    >>>
-    >>> bag = Bagging(base_classifier=DecisionTreeClassifier(max_depth=1, min_samples_leaf=1), n_classifiers=10)
+    >>> tree = Tree(max_depth=1, min_samples_leaf=1)
+    >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
     >>> bag.fit(X, y)
     >>>
     >>> aposteriori = APosteriori(X, y, K=3)
@@ -198,17 +216,25 @@ class APosteriori(Probabilistic):
 
     References
     ----------
-    Giacinto, Giorgio, and Fabio Roli. "Methods for dynamic classifier 
-    selection." Image Analysis and Processing, 1999. Proceedings. 
+    Giacinto, Giorgio, and Fabio Roli. "Methods for dynamic classifier
+    selection." Image Analysis and Processing, 1999. Proceedings.
     International Conference on. IEEE, 1999.
 
-    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. 
-    "From dynamic classifier selection to dynamic ensemble selection." 
+    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr.
+    "From dynamic classifier selection to dynamic ensemble selection."
     Pattern Recognition 41.5 (2008): 1718-1731.
     """
-    def __init__(self, Xval, yval, K=5, weighted=False, knn=None, threshold=0.1):
+
+    def __init__(self,
+                 Xval,
+                 yval,
+                 K=5,
+                 weighted=False,
+                 knn=None,
+                 threshold=0.1):
         self.threshold = threshold
-        super(APosteriori, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
+        super(APosteriori, self).__init__(
+            Xval, yval, K=K, weighted=weighted, knn=knn)
 
     def probabilities(self, clf, nn_X, nn_y, distances, x):
         [w_l] = clf.predict(x)
@@ -221,22 +247,21 @@ class APosteriori(Probabilistic):
             dc = clf.decision_function(nn_X)
             if len(dc.shape) == 1:
                 cl = clf.predict(nn_X).astype(int)
-                sc = np.zeros((dc.shape[0],2))
+                sc = np.zeros((dc.shape[0], 2))
                 for i in range(len(nn_X)):
-                    sc[i,cl[i]] = dc[i]
+                    sc[i, cl[i]] = dc[i]
                 dc = sc
-            proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:,np.newaxis]
+            proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:, np.newaxis]
 
-        proba = np.hstack((proba, np.zeros((proba.shape[0],1))))
+        proba = np.hstack((proba, np.zeros((proba.shape[0], 1))))
 
         # if the classifier never classifies as class w_l, P(w_l|psi_i) = 0
         proba_col = proba.shape[1] - 1
         if w_l in clf.classes_:
             proba_col = np.where(clf.classes_ == w_l)
 
-        delta = 1./(distances + 10e-8)
+        delta = 1. / (distances + 10e-8)
 
         numerator = sum(proba[idx_w_l, proba_col].ravel() * delta[idx_w_l])
         denominator = sum(proba[:, proba_col].ravel() * delta)
         return float(numerator) / (denominator + 10e-8)
-        

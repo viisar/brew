@@ -1,6 +1,3 @@
-import numpy as np
-from brew.base import Ensemble
-
 
 class Prunner(object):
 
@@ -11,5 +8,4 @@ class Prunner(object):
         return self
 
     def get(self, p=0.1):
-        return self.ensemble[:int(p*len(self.ensemble))]
-
+        return self.ensemble[:int(p * len(self.ensemble))]

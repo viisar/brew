@@ -6,11 +6,11 @@ from brew.selection.dynamic.mcb import MCB
 from brew.selection.dynamic.dsknn import DSKNN
 
 __all__ = ['LCA',
-        'OLA',
-        'APriori',
-        'APosteriori',
-        'KNORA_UNION',
-        'KNORA_ELIMINATE',
-        'MCB',
-        'DSKNN'
-        ]
+           'OLA',
+           'APriori',
+           'APosteriori',
+           'KNORA_UNION',
+           'KNORA_ELIMINATE',
+           'MCB',
+           'DSKNN'
+           ]

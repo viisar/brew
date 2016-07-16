@@ -3,6 +3,7 @@ import numpy as np
 from brew.base import Ensemble
 from .base import DCS
 
+
 class OLA(DCS):
     """Overall Local Accuracy.
 
@@ -30,10 +31,11 @@ class OLA(DCS):
     >>> from sklearn.tree import DecisionTreeClassifier
     >>> import numpy as np
     >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0], [0.5, 0],
+                      [1, 0], [0.8, 1], [0.8, -1]])
     >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
-    >>>
-    >>> bag = Bagging(base_classifier=DecisionTreeClassifier(max_depth=1, min_samples_leaf=1), n_classifiers=10)
+    >>> tree = DecisionTreeClassifier(max_depth=1, min_samples_leaf=1)
+    >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
     >>> bag.fit(X, y)
     >>>
     >>> ola = OLA(X, y, K=3)
@@ -48,13 +50,13 @@ class OLA(DCS):
 
     References
     ----------
-    Woods, Kevin, Kevin Bowyer, and W. Philip Kegelmeyer Jr. "Combination 
-    of multiple classifiers using local accuracy estimates." Computer Vision 
-    and Pattern Recognition, 1996. Proceedings CVPR'96, 1996 IEEE Computer 
+    Woods, Kevin, Kevin Bowyer, and W. Philip Kegelmeyer Jr. "Combination
+    of multiple classifiers using local accuracy estimates." Computer Vision
+    and Pattern Recognition, 1996. Proceedings CVPR'96, 1996 IEEE Computer
     Society Conference on. IEEE, 1996.
 
-    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr. 
-    "From dynamic classifier selection to dynamic ensemble selection." 
+    Ko, Albert HR, Robert Sabourin, and Alceu Souza Britto Jr.
+    "From dynamic classifier selection to dynamic ensemble selection."
     Pattern Recognition 41.5 (2008): 1718-1731.
     """
 
@@ -82,7 +84,7 @@ class OLA(DCS):
 
         options = None
         for j, score in enumerate(best_scores):
-            pred = [classifiers[i].predict(x) for i in d[score]]
+            pred = [classifiers[index].predict(x) for index in d[score]]
             pred = np.asarray(pred).flatten()
 
             bincount = np.bincount(pred.astype(int))
@@ -102,6 +104,7 @@ class OLA(DCS):
 
 
 class OLA2(DCS):
+
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):
             return Ensemble([ensemble.classifiers[0]]), None
@@ -115,8 +118,3 @@ class OLA2(DCS):
         scores = np.asarray([clf.score(X, y) for clf in classifiers])
 
         return Ensemble([classifiers[np.argmax(scores)]]), None
-
-
-
-
-

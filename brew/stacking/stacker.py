@@ -5,6 +5,7 @@ from ..combination.combiner import Combiner
 
 from sklearn import cross_validation
 
+
 class EnsembleStack(object):
 
     def __init__(self, mode='probs', cv=5):
@@ -17,7 +18,6 @@ class EnsembleStack(object):
             self.layers.append(ensemble)
         else:
             raise Exception('not an Ensemble object')
-
 
     def fit_layer(self, layer_idx, X, y):
         if layer_idx >= len(self.layers):
@@ -32,11 +32,11 @@ class EnsembleStack(object):
             for tra, tst in skf:
                 self.layers[layer_idx].fit(X[tra], y[tra])
                 out = self.layers[layer_idx].output(X[tst], mode=self.mode)
-                output[tst,:] = out[:,1:,:].reshape(out.shape[0],(out.shape[1]-1)*out.shape[2])
+                output[tst, :] = out[:, 1:, :].reshape(
+                    out.shape[0], (out.shape[1] - 1) * out.shape[2])
 
             self.layers[layer_idx].fit(X, y)
             self.fit_layer(layer_idx + 1, output, y)
-
 
     def fit(self, X, y):
         if self.cv > 1:
@@ -46,7 +46,8 @@ class EnsembleStack(object):
             for layer in self.layers:
                 layer.fit(X_, y)
                 out = layer.output(X_, mode=self.mode)
-                X_ = out[:,1:,:].reshape(out.shape[0],(out.shape[1]-1)*out.shape[2])
+                X_ = out[:, 1:, :].reshape(
+                    out.shape[0], (out.shape[1] - 1) * out.shape[2])
 
         return self
 
@@ -55,7 +56,8 @@ class EnsembleStack(object):
 
         for layer in self.layers:
             out = layer.output(input_, mode=self.mode)
-            input_ = out[:,1:,:].reshape(out.shape[0],(out.shape[1]-1)*out.shape[2])
+            input_ = out[:, 1:, :].reshape(
+                out.shape[0], (out.shape[1] - 1) * out.shape[2])
 
         return out
 
@@ -68,10 +70,8 @@ class EnsembleStackClassifier(object):
         if combiner is None:
             self.combiner = Combiner(rule='majority_vote')
 
-
     def fit(self, X, y):
         self.stack.fit(X, y)
-        
 
     def predict(self, X):
         out = self.stack.output(X)
@@ -80,7 +80,3 @@ class EnsembleStackClassifier(object):
     def predict_proba(self, X):
         out = self.stack.output(X)
         return np.mean(out, axis=2)
-        
-
-
-

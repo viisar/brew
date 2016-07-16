@@ -3,6 +3,7 @@ import numpy as np
 from brew.base import Ensemble
 from .base import DCS
 
+
 class MCB(DCS):
     """Multiple Classifier Behavior.
 
@@ -32,10 +33,11 @@ class MCB(DCS):
     >>> from sklearn.tree import DecisionTreeClassifier
     >>> import numpy as np
     >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0],
+                      [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
     >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
-    >>>
-    >>> bag = Bagging(base_classifier=DecisionTreeClassifier(max_depth=1, min_samples_leaf=1), n_classifiers=10)
+    >>> tree = DecisionTreeClassifier(max_depth=1, min_samples_leaf=1)
+    >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
     >>> bag.fit(X, y)
     >>>
     >>> mcb = MCB(X, y, K=3)
@@ -51,33 +53,32 @@ class MCB(DCS):
 
     References
     ----------
-    Giacinto, Giorgio, and Fabio Roli. "Dynamic classifier selection 
-    based on multiple classifier behaviour." Pattern Recognition 34.9 
+    Giacinto, Giorgio, and Fabio Roli. "Dynamic classifier selection
+    based on multiple classifier behaviour." Pattern Recognition 34.9
     (2001): 1879-1881.
     """
-    def __init__(self, Xval, yval, K=5, weighted=False, knn=None, 
-            similarity_threshold=0.7, significance_threshold=0.3):
+
+    def __init__(self, Xval, yval, K=5, weighted=False, knn=None,
+                 similarity_threshold=0.7, significance_threshold=0.3):
         self.similarity_threshold = similarity_threshold
         self.significance_threshold = significance_threshold
         super(MCB, self).__init__(Xval, yval, K=K, weighted=weighted, knn=knn)
-
 
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):
             return Ensemble([ensemble.classifiers[0]]), None
 
-        mcb_x = ensemble.output(x, mode='labels')[0,:]
+        mcb_x = ensemble.output(x, mode='labels')[0, :]
 
         # intialize variables
         # the the indexes of the KNN of x
-        classifiers = ensemble.classifiers
         [idx] = self.knn.kneighbors(x, return_distance=False)
         X, y = self.Xval[idx], self.yval[idx]
         mcb_v = ensemble.output(X, mode='labels')
 
         idx = []
         for i in range(X.shape[0]):
-            sim = np.mean(mcb_x == mcb_v[i,:])
+            sim = np.mean(mcb_x == mcb_v[i, :])
             if sim > self.similarity_threshold:
                 idx = idx + [i]
 
@@ -96,5 +97,3 @@ class MCB(DCS):
             return Ensemble(classifiers=[best_classifier]), None
 
         return Ensemble(classifiers=ensemble.classifiers), None
-
-

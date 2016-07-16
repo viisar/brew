@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score
 from brew.combination.combiner import Combiner
 from brew.metrics.evaluation import auc_score
 
+
 def transform2votes(output, n_classes):
 
     n_samples = output.shape[0]
@@ -15,18 +16,22 @@ def transform2votes(output, n_classes):
     #    idx = int(output[i])
     #    votes[i, idx] = 1
     votes[np.arange(n_samples), output.astype(int)] = 1
-    #assert np.equal(votes2.astype(int), votes.astype(int)).all()
+    # assert np.equal(votes2.astype(int), votes.astype(int)).all()
 
     return votes.astype(int)
 
+
 class Transformer(object):
+
     def __init__(self):
         pass
 
     def apply(self, X):
         pass
 
+
 class FeatureSubsamplingTransformer(Transformer):
+
     def __init__(self, features=None):
         self.features = features
 
@@ -36,9 +41,11 @@ class FeatureSubsamplingTransformer(Transformer):
             return X[self.features]
         # if X has more than one sample (2D)
         else:
-            return X[:, self.features] 
+            return X[:, self.features]
+
 
 class BrewClassifier(object):
+
     def __init__(self, classifier=None, transformer=None):
         self.transformer = transformer
         self.classifier = classifier
@@ -59,16 +66,17 @@ class BrewClassifier(object):
         y = self.classifier.predict_proba(X)
         return y
 
+
 class Ensemble(object):
     """Class that represents a collection of classifiers.
 
     The Ensemble class serves as a wrapper for a list of classifiers,
     besides providing a simple way to calculate the output of all the
-    classifiers in the ensemble. 
-    
+    classifiers in the ensemble.
+
     Attributes
     ----------
-    `classifiers` : list 
+    `classifiers` : list
         Stores all classifiers in the ensemble.
 
     `yval` : array-like, shape = [indeterminated]
@@ -84,7 +92,8 @@ class Ensemble(object):
     >>>
     >>> from brew.base import Ensemble
     >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] , [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
+    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0],
+                      [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
     >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
     >>>
     >>> dt1 = DecisionTreeClassifier()
@@ -94,11 +103,12 @@ class Ensemble(object):
     >>> dt2.fit(X, y)
     >>>
     >>> ens = Ensemble(classifiers=[dt1, dt2])
- 
+
     """
+
     def __init__(self, classifiers=None):
-        
-        if classifiers == None:
+
+        if classifiers is None:
             self.classifiers = []
         else:
             self.classifiers = classifiers
@@ -122,29 +132,34 @@ class Ensemble(object):
 
     def output(self, X, mode='votes'):
         """Returns the output of all classifiers packed in a numpy array.
-       
-        This method calculates the output of each classifier, and stores them
-        in a array-like shape. The specific shape and the meaning of each element
-        is defined by argument `mode`. 
 
-        (1) 'labels': each classifier will return a single label prediction
-        for each sample in X, therefore the ensemble output will be a 2d-array
-        of shape (n_samples, n_classifiers), with elements being the class labels.
+        This method calculates the output of each classifier, and stores
+        them in a array-like shape. The specific shape and the meaning of
+        each element is defined by argument `mode`.
 
-        (2) 'probs': each classifier will return the posterior probabilities of each
-        class (i.e. instead of returning a single choice it will return the
-        probabilities of each class label being the right one). The ensemble output
-        will be a 3d-array with shape (n_samples, n_classes, n_classifiers), with
-        each element being the probability of a specific class label being right on a
-        given sample according to one the classifiers. This mode can be used with
-        any combination rule.
-        
-        (3) 'votes': each classifier will return votes for each class label (i.e.
-        a binary representation, where the chosen class label will have one vote
-        and the other labels will have zero votes. The ensemble output will be
-        a binary 3d-array with shape (n_samples, n_classes, n_classifiers), with
-        the elements being the votes. This mode is mainly used in combining the
-        classifiers output by using majority vote rule.
+        (1) 'labels': each classifier will return a single label
+        prediction for each sample in X, therefore the ensemble
+        output will be a 2d-array of shape (n_samples, n_classifiers),
+        with elements being the class labels.
+
+        (2) 'probs': each classifier will return the posterior
+        probabilities of each class (i.e. instead of returning
+        a single choice it will return the probabilities of each
+        class label being the right one). The ensemble output
+        will be a 3d-array with shape (n_samples, n_classes,
+        n_classifiers), with each element being the probability
+        of a specific class label being right on a given sample
+        according to one the classifiers. This mode can be used
+        with any combination rule.
+
+        (3) 'votes': each classifier will return votes for each
+        class label i.e. a binary representation, where the chosen
+        class label will have one vote and the other labels will
+        have zero votes. The ensemble output will be a binary
+        3d-array with shape (n_samples, n_classes, n_classifiers),
+        with the elements being the votes. This mode is mainly
+        used in combining the classifiers output by using majority
+        vote rule.
 
         Parameters
         ----------
@@ -152,14 +167,14 @@ class Ensemble(object):
                 The test input samples.
 
         mode: string, optional(default='labels')
-                The type of output given by each classifier.  
+                The type of output given by each classifier.
                 'labels' | 'probs' | 'votes'
         """
 
         if mode == 'labels':
             out = np.zeros((X.shape[0], len(self.classifiers)))
             for i, clf in enumerate(self.classifiers):
-                out[:,i] = clf.predict(X)
+                out[:, i] = clf.predict(X)
 
         else:
             # assumes that all classifiers were
@@ -170,21 +185,22 @@ class Ensemble(object):
 
             for i, c in enumerate(self.classifiers):
                 if mode == 'probs':
-                    probas = np.zeros((X.shape[0],n_classes))
-                    probas[:,list(c.classes_)] = c.predict_proba(X)
-                    out[:,:,i] = probas
+                    probas = np.zeros((X.shape[0], n_classes))
+                    probas[:, list(c.classes_)] = c.predict_proba(X)
+                    out[:, :, i] = probas
 
                 elif mode == 'votes':
-                    tmp = c.predict(X) # (n_samples,)
-                    votes = transform2votes(tmp, n_classes) # (n_samples, n_classes)
-                    out[:,:,i] = votes
+                    tmp = c.predict(X)  # (n_samples,)
+                    # (n_samples, n_classes)
+                    votes = transform2votes(tmp, n_classes)
+                    out[:, :, i] = votes
 
         return out
 
     def output_simple(self, X):
         out = np.zeros((X.shape[0], len(self.classifiers)))
         for i, clf in enumerate(self.classifiers):
-            out[:,i] = clf.predict(X)
+            out[:, i] = clf.predict(X)
 
         return out
 
@@ -210,13 +226,14 @@ class Ensemble(object):
 
         return self
 
+
 class EnsembleClassifier(object):
 
     def __init__(self, ensemble=None, selector=None, combiner=None):
         self.ensemble = ensemble
         self.selector = selector
-                
-        if combiner == None:
+
+        if combiner is None:
             combiner = Combiner(rule='majority_vote')
 
         self.combiner = combiner
@@ -237,25 +254,25 @@ class EnsembleClassifier(object):
             y = []
 
             for i in range(X.shape[0]):
-                ensemble, weights = self.selector.select(self.ensemble, X[i,:][np.newaxis,:])
-                    
-                if weights is not None: # use the ensemble with weights
-                    out = ensemble.output(X[i,:][np.newaxis,:])
-                    
+                ensemble, weights = self.selector.select(
+                    self.ensemble, X[i, :][np.newaxis, :])
+
+                if weights is not None:  # use the ensemble with weights
+                    out = ensemble.output(X[i, :][np.newaxis, :])
+
                     # apply weights
                     for i in range(out.shape[2]):
-                        out[:,:,i] = out[:,:,i] * weights[i]
+                        out[:, :, i] = out[:, :, i] * weights[i]
 
                     [tmp] = self.combiner.combine(out)
                     y.append(tmp)
-                    
-                else: # use the ensemble, but ignore the weights
-                    out = ensemble.output(X[i,:][np.newaxis,:])
+
+                else:  # use the ensemble, but ignore the weights
+                    out = ensemble.output(X[i, :][np.newaxis, :])
                     [tmp] = self.combiner.combine(out)
                     y.append(tmp)
 
         return np.asarray(y)
-
 
     def predict_proba(self, X):
 
@@ -270,41 +287,42 @@ class EnsembleClassifier(object):
             out_full = []
 
             for i in range(X.shape[0]):
-                ensemble, weights = self.selector.select(self.ensemble, X[i,:][np.newaxis,:])
-                    
-                if weights is not None: # use the ensemble with weights
-                    out = ensemble.output(X[i,:][np.newaxis,:])
-                    
+                ensemble, weights = self.selector.select(
+                    self.ensemble, X[i, :][np.newaxis, :])
+
+                if weights is not None:  # use the ensemble with weights
+                    out = ensemble.output(X[i, :][np.newaxis, :])
+
                     # apply weights
                     for i in range(out.shape[2]):
-                        out[:,:,i] = out[:,:,i] * weights[i]
+                        out[:, :, i] = out[:, :, i] * weights[i]
 
-                    #[tmp] = self.combiner.combine(out)
-                    out_full.extend(list(np.mean(out, axis=2)))
-                    
-                else: # use the ensemble, but ignore the weights
-                    out = ensemble.output(X[i,:][np.newaxis,:])
+                    # [tmp] = self.combiner.combine(out)
                     out_full.extend(list(np.mean(out, axis=2)))
 
-        #return np.asarray(y)
+                else:  # use the ensemble, but ignore the weights
+                    out = ensemble.output(X[i, :][np.newaxis, :])
+                    out_full.extend(list(np.mean(out, axis=2)))
+
+        # return np.asarray(y)
         return np.array(out_full)
 
     def score(self, X, y, sample_weight=None):
         return accuracy_score(y, self.predict(X), sample_weight=sample_weight)
 
+
 def oracle(ensemble, X, y_true, metric=auc_score):
     out = ensemble.output(X, mode='labels')
-    oracle = np.equal(out, y_true[:,np.newaxis])
+    oracle = np.equal(out, y_true[:, np.newaxis])
     mask = np.any(oracle, axis=1)
-    y_pred = out[:,0]
+    y_pred = out[:, 0]
     y_pred[mask] = y_true[mask]
     return metric(y_pred, y_true)
+
 
 def single_best(ensemble, X, y_true, metric=auc_score):
     out = ensemble.output(X, mode='labels')
     scores = np.zeros(len(ensemble), dtype=float)
     for i in range(scores.shape[0]):
-        scores[i] = metric(out[:,i], y_true)
+        scores[i] = metric(out[:, i], y_true)
     return np.max(scores)
-
-
