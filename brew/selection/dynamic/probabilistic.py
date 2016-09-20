@@ -150,7 +150,7 @@ class APriori(Probabilistic):
                 dc = sc
             proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:, np.newaxis]
 
-        proba = np.hstack((proba, np.zeros((proba.shape[0], 1))))
+            proba = np.hstack((proba, np.zeros((proba.shape[0], 1))))
 
         d = dict(list(enumerate(clf.classes_)))
         col_idx = np.zeros(nn_y.size, dtype=int)
@@ -239,6 +239,7 @@ class APosteriori(Probabilistic):
     def probabilities(self, clf, nn_X, nn_y, distances, x):
         [w_l] = clf.predict(x)
         [idx_w_l] = np.where(nn_y == w_l)
+        [proba_col] = np.where(clf.classes_ == w_l)
 
         # in the A Posteriori method the 'x' is used
         if hasattr(clf, 'predict_proba'):
@@ -253,12 +254,9 @@ class APosteriori(Probabilistic):
                 dc = sc
             proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:, np.newaxis]
 
-        proba = np.hstack((proba, np.zeros((proba.shape[0], 1))))
+            proba = np.hstack((proba, np.zeros((proba.shape[0], 1))))
 
         # if the classifier never classifies as class w_l, P(w_l|psi_i) = 0
-        proba_col = proba.shape[1] - 1
-        if w_l in clf.classes_:
-            proba_col = np.where(clf.classes_ == w_l)
 
         delta = 1. / (distances + 10e-8)
 

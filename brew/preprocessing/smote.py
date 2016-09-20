@@ -44,7 +44,8 @@ def smote(T, N=100, k=1):
         # first neighbor returned is always the very own sample, so
         # get 1 more neighbor and discard the first neighbor returned
         neighbors_idx = knn.kneighbors(
-            T[i, :], n_neighbors=k + 1, return_distance=False)[0][1:]
+            T[i, :].reshape(1,-1), n_neighbors=k + 1, 
+            return_distance=False)[0][1:]
 
         # randomly choose N neighbors of the sample (with replacement)
         nn_idx = np.random.choice(neighbors_idx, size=(N,))
