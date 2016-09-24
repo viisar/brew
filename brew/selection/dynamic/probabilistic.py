@@ -147,10 +147,8 @@ class APriori(Probabilistic):
                 sc = np.zeros((dc.shape[0], 2))
                 for i in range(len(nn_X)):
                     sc[i, cl[i]] = dc[i]
-                dc = sc
+                dc = np.abs(sc)
             proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:, np.newaxis]
-
-            proba = np.hstack((proba, np.zeros((proba.shape[0], 1))))
 
         d = dict(list(enumerate(clf.classes_)))
         col_idx = np.zeros(nn_y.size, dtype=int)
@@ -251,10 +249,8 @@ class APosteriori(Probabilistic):
                 sc = np.zeros((dc.shape[0], 2))
                 for i in range(len(nn_X)):
                     sc[i, cl[i]] = dc[i]
-                dc = sc
+                dc = np.abs(sc)
             proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:, np.newaxis]
-
-            proba = np.hstack((proba, np.zeros((proba.shape[0], 1))))
 
         # if the classifier never classifies as class w_l, P(w_l|psi_i) = 0
 
