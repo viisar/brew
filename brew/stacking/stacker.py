@@ -72,7 +72,8 @@ class EnsembleStackClassifier(object):
 
     def fit(self, X, y):
         self.stack.fit(X, y)
-
+        return self
+        
     def predict(self, X):
         out = self.stack.output(X)
         return self.combiner.combine(out)
