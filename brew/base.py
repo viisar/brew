@@ -258,7 +258,10 @@ class EnsembleClassifier(object):
                     self.ensemble, X[i, :][np.newaxis, :])
 
                 if weights is not None:  # use the ensemble with weights
-                    out = ensemble.output(X[i, :][np.newaxis, :])
+                    if self.combiner.combination_rule == 'majority_vote':
+                        out = ensemble.output(X[i, :][np.newaxis, :])
+                    else:
+                        out = ensemble.output(X[i, :][np.newaxis, :], mode='probs')
 
                     # apply weights
                     for i in range(out.shape[2]):
@@ -268,7 +271,10 @@ class EnsembleClassifier(object):
                     y.append(tmp)
 
                 else:  # use the ensemble, but ignore the weights
-                    out = ensemble.output(X[i, :][np.newaxis, :])
+                    if self.combiner.combination_rule == 'majority_vote':
+                        out = ensemble.output(X[i, :][np.newaxis, :])
+                    else:
+                        out = ensemble.output(X[i, :][np.newaxis, :], mode='probs')
                     [tmp] = self.combiner.combine(out)
                     y.append(tmp)
 

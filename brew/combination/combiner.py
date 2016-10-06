@@ -5,6 +5,7 @@ from brew.combination import rules
 class Combiner(object):
 
     def __init__(self, rule='majority_vote'):
+        self.combination_rule = rule
 
         if rule == 'majority_vote':
             self.rule = rules.majority_vote_rule
