@@ -4,7 +4,7 @@ from brew.base import Ensemble
 from .base import DCS
 
 
-class LCA(DCS):
+class LCA2(DCS):
     """Local Class Accuracy.
 
     The Local Class Accuracy selects the best classifier for
@@ -129,7 +129,7 @@ class LCA(DCS):
         return Ensemble([ensemble.classifiers[np.argmax(scores)]]), None
 
 
-class LCA2(DCS):
+class LCA(DCS):
 
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):

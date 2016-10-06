@@ -4,7 +4,7 @@ from brew.base import Ensemble
 from .base import DCS
 
 
-class OLA(DCS):
+class OLA2(DCS):
     """Overall Local Accuracy.
 
     The Overall Local Accuracy selects the best classifier for
@@ -103,7 +103,7 @@ class OLA(DCS):
         return Ensemble([classifiers[np.argmax(scores)]]), None
 
 
-class OLA2(DCS):
+class OLA(DCS):
 
     def select(self, ensemble, x):
         if ensemble.in_agreement(x):
