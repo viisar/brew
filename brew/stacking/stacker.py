@@ -66,9 +66,18 @@ class EnsembleStackClassifier(object):
 
     def __init__(self, stack, combiner=None):
         self.stack = stack
-        self.combiner = combiner
         if combiner is None:
-            self.combiner = Combiner(rule='majority_vote')
+            self.combiner = Combiner(rule='mean')
+        elif isinstance(combiner, str):
+            if combiner == 'majority_vote':
+                raise ValueError('EnsembleStackClassifier '
+                        'do not support majority_vote')
+            self.combiner = Combiner(rule=combiner)
+        elif isinstance(combiner, Combiner):
+            self.combiner = combiner
+        else:
+            raise ValueError('Invalid combiner!')
+
 
     def fit(self, X, y):
         self.stack.fit(X, y)
