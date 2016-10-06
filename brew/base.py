@@ -234,9 +234,13 @@ class EnsembleClassifier(object):
         self.selector = selector
 
         if combiner is None:
-            combiner = Combiner(rule='majority_vote')
-
-        self.combiner = combiner
+            self.combiner = Combiner(rule='majority_vote')
+        elif isinstance(combiner, str):
+            self.combiner = Combiner(rule=combiner)
+        elif isinstance(combiner, Combiner):
+            self.combiner = combiner
+        else:
+            raise ValueError('Invalid parameter combiner')
 
     def fit(self, X, y):
         self.ensemble.fit(X, y)

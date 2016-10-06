@@ -21,8 +21,8 @@ from sklearn.metrics import zero_one_loss
 from sklearn.cross_validation import train_test_split
 
 N = 1000
-#dt = DecisionTreeClassifier(max_depth=9, min_samples_leaf=1)
-dt = Perceptron()
+dt = DecisionTreeClassifier(max_depth=3, min_samples_leaf=1)
+#dt = Perceptron()
 
 X, y = datasets.make_hastie_10_2(n_samples=N, random_state=1)
 for i, yi in enumerate(set(y)):
@@ -50,7 +50,7 @@ dcs_names = ['OLA', 'LCA', 'KE', 'KU', 'aPriori', 'aPosteriori', 'MCB', 'DSKNN']
 
 print('-----------------ERROR RATE----------------------')
 for dcs, name in zip(dcs_list, dcs_names):
-    mcs = EnsembleClassifier(bag.ensemble, selector=dcs)
+    mcs = EnsembleClassifier(bag.ensemble, selector=dcs, combiner='majority_vote')
     y_pred = mcs.predict(X_test)
     print('{}, {}'.format(name, zero_one_loss(y_pred, y_test)))
 print ('------------------------------------------------')
