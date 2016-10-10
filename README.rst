@@ -111,11 +111,23 @@ Example
 Dependencies
 ============
 - Python 2.7+
-- scikit-learn >= 0.14.1
-- Numpy >= 1.3
-- SciPy >= 0.7
+- scikit-learn >= 0.15.2
+- Numpy >= 1.6.1
+- SciPy >= 0.9
 - Matplotlib >= 0.99.1 (examples, only)
 - mlxtend (examples, only)
+
+
+Installing
+==========
+
+You can easily install brew using ``pip``::
+
+    pip install brew
+
+or, if you prefer an up-to-date version, get it from here::
+
+    pip install git+https://github.com/viisar/brew.git
 
 
 Important References
@@ -123,5 +135,4 @@ Important References
 
 - Kuncheva, Ludmila I. Combining pattern classifiers: methods and algorithms. John Wiley & Sons, 2014.
 - Zhou, Zhi-Hua. Ensemble methods: foundations and algorithms. CRC Press, 2012.
-
 
