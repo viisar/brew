@@ -13,6 +13,15 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
+with open('brew/__init__.py') as fid:
+    for line in fid:
+        if line.startswith('__version__'):
+            VERSION = line.strip().split()[-1][1:-1]
+            break
+
+with open('requirements.txt') as fid:
+    INSTALL_REQUIRES = [l.strip() for l in fid.readlines() if l]
+
 readme = open('README.rst').read()
 doclink = """
 Documentation
@@ -20,9 +29,6 @@ Documentation
 
 The full documentation is at http://brew.rtfd.org."""
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
-
-import brew
-VERSION=brew.__version__
 
 setup(
     name='brew',
@@ -35,8 +41,7 @@ setup(
     packages=find_packages(where='.', exclude=('test')),
     package_dir={'brew': 'brew'},
     include_package_data=True,
-    install_requires=[
-    ],
+    install_requires=INSTALL_REQUIRES,
     license='MIT',
     zip_safe=False,
     keywords='brew',
@@ -51,3 +56,4 @@ setup(
         'Topic :: Scientific/Engineering',
     ],
 )
+
