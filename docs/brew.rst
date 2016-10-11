@@ -11,6 +11,7 @@ Subpackages
     brew.metrics
     brew.preprocessing
     brew.selection
+    brew.stacking
     brew.utils
 
 Submodules
