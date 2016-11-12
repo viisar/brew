@@ -2,11 +2,6 @@
 Credits
 =======
 
-This project was started in 2014 by *Dayvid Victor* and *Thyago Porpino*
-as a project for the Multiple Classifier Systems class at Federal University of Pernambuco (UFPE).
-
-Nowdays, this project is part of Dayvid's PhD thesis on Ensemble Learning.
-
 Development Lead
 ----------------
 
@@ -16,4 +11,7 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+Refers to GitHub contributors page_.
+
+.. _page: https://github.com/viisar/brew/graphs/contributors
+
