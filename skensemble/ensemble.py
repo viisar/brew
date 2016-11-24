@@ -1,6 +1,8 @@
 import numpy as np
 
 
+import sklearn.utils
+
 class Ensemble(object):
     """Class that represents a list of estimators.
 
@@ -83,6 +85,8 @@ class Ensemble(object):
             If ensemble of classifiers, output shape is (n_samples, n_classes, n_estimators)
             If ensemble of regressors, output shape is (n_samples, n_estimators)
         """
+        X = sklearn.utils.check_array(X)
+
         n_samples = X.shape[0]
         n_classes = len(self.classes_)
         n_estimators = len(self._estimators)
@@ -105,13 +109,11 @@ class Ensemble(object):
         return output
 
     def agrees(self, X):
-        if not self.is_classification:
-            raise NotImplementedError
-        pass
+        X = sklearn.utils.check_array(X)
+        preds = np.array([clf.predict(X) for clf in self._estimators]).T
+        return np.all(np.equal(preds[:,0, np.newaxis], preds), axis=1)
 
-    def oracle(self, X, y):
-        if not self.is_classification:
-            raise NotImplementedError
+
 
 def output2votes(output):
     votes = np.zeros_like(output, dtype=int)
