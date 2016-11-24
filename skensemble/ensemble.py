@@ -122,3 +122,6 @@ def output2votes(output):
 
     return votes
 
+def output2labels(output):
+    return np.argmax(output, axis=1)
+
