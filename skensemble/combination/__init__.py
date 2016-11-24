@@ -1,3 +1,3 @@
-from brew.combination.combiner import Combiner
+from skensemble.combination.combiner import Combiner
 
 __all__ = ['Combiner']
