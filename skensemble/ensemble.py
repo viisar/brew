@@ -1,6 +1,5 @@
 import numpy as np
 
-import sklearn.base
 
 class Ensemble(object):
     """Class that represents a list of estimators.
