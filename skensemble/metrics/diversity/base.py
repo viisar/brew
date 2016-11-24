@@ -3,11 +3,20 @@ import numpy as np
 from brew.metrics.diversity import paired
 from brew.metrics.diversity import non_paired
 
+CLASSIFICATION_DIVERSITY_FUNCTIONS = {
+    'e' : non_paired.entropy_e,
+    'kw' : non_paired.kohavi_wolpert_variance,
+    'q' : paired.q_statistics,
+    'rho' : paired.correlation_coefficient_rho,
+    'disagreement' : paired.disagreement,
+    'agreement' : paired.agreement,
+    'df' : paired.double_fault
+}
 
-class Diversity(object):
-    """Ensemble Diversity Calculator.
+class ClassifiersDiversity(object):
+    """Diversity of Classifiers Ensemble.
 
-    The class calculates the diversity of ensemble of classifiers.
+    Calculates the diversity of ensemble of classifiers.
 
     Attributes
     ----------
@@ -16,16 +25,16 @@ class Diversity(object):
 
     Parameters
     ----------
-    metric : {'e', 'kw', 'q', 'p', 'disagreement', 'agreement', 'df'}, optional
+    metric : str or function, (default = 'e')
         Metric used to compute the ensemble diversity:
 
-        - 'e' (Entropy Measure e) will use :meth:`kuncheva_entropy_measure`
-        - 'kw' (Kohavi Wolpert Variance) will use :meth:`kuncheva_kw`
-        - 'q' (Q Statistics) will use :meth:`kuncheva_q_statistics`
-        - 'p' (Correlation Coefficient p) will use :meth:`kuncheva_correlation_coefficient_p`  # noqa
-        - 'disagreement' (Disagreement Measure) will use :meth:`kuncheva_disagreement_measure`  # noqa
-        - 'agreement' (Agreement Measure) will use :meth:`kuncheva_agreement_measure` # noqa
-        - 'df' (Double Fault Measure) will use :meth:`kuncheva_double_fault_measure`  # noqa
+        - 'e' (Entropy Measure e) will use :meth:`entropy_e`
+        - 'kw' (Kohavi Wolpert Variance) will use :meth:`kohavi_wolpert_variance`
+        - 'q' (Q Statistics) will use :meth:`q_statistics`
+        - 'rho' (Correlation Coefficient Rho) will use :meth:`correlation_coefficient_rho`
+        - 'disagreement' (Disagreement Measure) will use :meth:`disagreement`
+        - 'agreement' (Agreement Measure) will use :meth:`agreement`
+        - 'df' (Double Fault Measure) will use :meth:`double_fault`
 
     Examples
     --------
@@ -65,35 +74,45 @@ class Diversity(object):
     of diversity measures." Machine Learning 65.1 (2006): 247-271.
     """
 
-    def __init__(self, metric=''):
-        if metric == 'e':
-            self.metric = non_paired.kuncheva_entropy_measure
+    def __init__(self, metric='e'):
+        if metric not in CLASSIFICATION_DIVERSITY_FUNCTIONS.keys():
+            raise ValueError('Invalida diversity metric \'{}\'!'.format(metric))
 
-        elif metric == 'kw':
-            self.metric = non_paired.kuncheva_kw
+        self.metric = CLASSIFICATION_DIVERSITY_FUNCTIONS[metric]
 
-        elif metric == 'q':
-            self.metric = paired.kuncheva_q_statistics
 
-        elif metric == 'p':
-            self.metric = paired.kuncheva_correlation_coefficient_p
+    def calculate(self, ensemble_oracle):
+        """
+        Calculates the diversity of ensemble of classifiers.
 
-        elif metric == 'disagreement':
-            self.metric = paired.kuncheva_disagreement_measure
+        Parameters
+        ----------
+        ensemble_oracle: ndarray, shape (n_samples, n_estimators)
+            the return from Ensemble.oracle method.
 
-        elif metric == 'agreement':
-            self.metric = paired.kuncheva_agreement_measure
+        Returns
+        -------
+        diversity: float,
+            Diversity of the ensemble that generated ensemble_oracle.
+            Values of diversity metrics have different meanings:
+            - 'e':
+            - 'kw': The diversity increases with values increasing of the KW variance
+            - 'q':
+            - 'rho':
+            - 'disagreement': The diversity increases with the value of the disagreement measure.
+            - 'agreement': The diversity decreases with values increasing of the agreement measure.
+            - 'df': The diversity decreases when the value of the double-fault measure increases.
+        """
+        if ensemble_oracle is None:
+            raise ValueError('Invalid ensemble_oracle argument!')
 
-        elif metric == 'df':
-            self.metric = paired.kuncheva_double_fault_measure
+        if ensemble_oracle.ndim != 2:
+            raise ValueError('Invalid ensemble_oracle shape {}'
+                    '(must be 2)!'.format(ensemble_oracle.ndim))
 
-        else:
-            print('invalid metric')
+        if ensemble_oracle.shape[1] < 2:
+            raise ValueError('Diversity requires at least 2 classifiers,'
+                    'got {}'.format(oracle.shape[1]))
 
-    def calculate(self, ensemble, X, y):
-        out = ensemble.output(X, mode='labels')
-        oracle = np.equal(out, y[:, np.newaxis])
+        return self.metric(ensemble_oracle)
 
-        D = self.metric(oracle)
-
-        return D

@@ -1,7 +1,23 @@
 import numpy as np
 
-
 import sklearn.utils
+
+def output2votes(ensemble_output):
+    votes = np.zeros_like(output, dtype=int)
+
+    for idx_estimator in range(votes.shape[2]):
+        idx_classes = np.argmax(ensemble_output[:, :, idx_estimator], axis=1)
+        votes[np.arange(votes.shape[0]), idx_classes, idx_estimator] = 1
+
+    return votes
+
+def output2labels(ensemble_output, classes=None):
+    labels = np.argmax(ensemble_output, axis=1)
+    if classes is None:
+        return labels
+
+    return classes.take(labels)
+
 
 class Ensemble(object):
     """Class that represents a list of estimators.
@@ -113,17 +129,9 @@ class Ensemble(object):
         preds = np.array([clf.predict(X) for clf in self._estimators]).T
         return np.all(np.equal(preds[:,0, np.newaxis], preds), axis=1)
 
+    def oracle(self, X, y):
+        X, y = sklearn.utils.check_X_y(X, y)
+        labels = output2labels(self.output(X), self.classes_)
+        return  np.equal(labels, y[:, np.newaxis])
 
-
-def output2votes(output):
-    votes = np.zeros_like(output, dtype=int)
-
-    for idx_estimator in range(votes.shape[2]):
-        idx_classes = np.argmax(output[:, :, idx_estimator], axis=1)
-        votes[np.arange(votes.shape[0]), idx_classes, idx_estimator] = 1
-
-    return votes
-
-def output2labels(output):
-    return np.argmax(output, axis=1)
 
