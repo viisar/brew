@@ -1,11 +1,5 @@
 # TODO: add documentation header
 
-"""
-[1] Kittler, J.; Hatef, M.; Duin, R.P.W.; Matas, J., "On combining
-    classifiers," Pattern Analysis and Machine Intelligence, IEEE
-    Transactions on , vol.20, no.3, pp.226,239, Mar 1998
-"""
-
 import numpy as np
 
 
@@ -23,7 +17,7 @@ def max_rule(probs):
             one as a sanity check that the probabilities are valid.
     """
 
-    return probs.max(axis=1).argmax()
+    return probs.max(axis=1)
 
 
 def min_rule(probs):
@@ -40,7 +34,7 @@ def min_rule(probs):
             one as a sanity check that the probabilities are valid.
     """
 
-    return probs.min(axis=1).argmax()
+    return probs.min(axis=1)
 
 
 def mean_rule(probs):
@@ -58,7 +52,7 @@ def mean_rule(probs):
             one as a sanity check that the probabilities are valid.
     """
 
-    return probs.mean(axis=1).argmax()
+    return probs.mean(axis=1)
 
 
 def median_rule(probs):
@@ -77,25 +71,4 @@ def median_rule(probs):
     """
 
     # numpy array has no median method
-    return np.median(probs, axis=1).argmax()
-
-
-def majority_vote_rule(votes):
-    """
-    Implements the majority vote rule as defined by [1].
-
-    This rule can always be used, because even if the classifiers output
-    posterior probabilities, you can for example, decide to vote for
-    the class with the greatest probability. The important thing is to
-    transform the classifiers probabilitities/decisions into a matrix
-    of votes.
-
-    Parameters
-    ----------
-    votes:  Numpy 2d-array with rows representing each class, columns
-            representing each classifier and elements representing
-            votes (binary). Each column should sum up to one (i.e.
-            a classifier can only vote for one class).
-    """
-
-    return votes.sum(axis=1).argmax()
+    return np.median(probs, axis=1)

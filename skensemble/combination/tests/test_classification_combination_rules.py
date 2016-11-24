@@ -5,13 +5,13 @@ Tests for `brew.combination.rules` module.
 import numpy as np
 
 # rules that expect the posterior probabilities
-from brew.combination.rules import max_rule
-from brew.combination.rules import min_rule
-from brew.combination.rules import mean_rule
-from brew.combination.rules import median_rule
+from skensemble.combination.classification_rules import max_rule
+from skensemble.combination.classification_rules import min_rule
+from skensemble.combination.classification_rules import mean_rule
+from skensemble.combination.classification_rules import median_rule
 
 # rules that expect the decision votes
-from brew.combination.rules import majority_vote_rule
+from skensemble.combination.classification_rules import majority_vote_rule
 
 
 example1 = {}
