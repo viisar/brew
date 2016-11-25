@@ -1,7 +1,7 @@
 import numpy as np
 
-from brew.metrics.diversity import paired
-from brew.metrics.diversity import non_paired
+from skensemble.metrics.diversity import paired
+from skensemble.metrics.diversity import non_paired
 
 CLASSIFICATION_DIVERSITY_FUNCTIONS = {
     'e' : non_paired.entropy_e,
@@ -112,7 +112,7 @@ class ClassifiersDiversity(object):
 
         if ensemble_oracle.shape[1] < 2:
             raise ValueError('Diversity requires at least 2 classifiers,'
-                    'got {}'.format(oracle.shape[1]))
+                    'got {}'.format(ensemble_oracle.shape[1]))
 
         return self.metric(ensemble_oracle)
 

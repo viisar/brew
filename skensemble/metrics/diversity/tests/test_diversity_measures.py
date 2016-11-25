@@ -1,6 +1,7 @@
 """
 See: Kuncheva L.I., C.J. Whitaker. Measures of diversity in classifier ensembles, Machine Learning , 51 , 2003, 181-207,
 """
+import pytest
 
 import numpy as np
 
@@ -30,9 +31,10 @@ diversity_values = {
     'rho' : 0.0156,                 # Correlation coefficient
     'disagreement' : 0.4889,        # Disagreement
     'agreement' : (1.0 / 0.4889),   # Agreement
+    'df' : 0.3156,                  # Double Fault
     'kw' : 0.2200,                  # Kohavi-Wolpert variance
     'kappa' : 0.0079,               # Interrater agreement
-    'entropy' : 0.7200,             # Entropy Measure E
+    'e' : 0.7200,                   # Entropy Measure E
     'theta' : 0.0264,               # Difficulty Measure
     'gd' : 0.4365,                  # Generalized Diversity
     'cdf' : 0.4889,                 # Coincidence Failure Diversity
@@ -124,7 +126,6 @@ class TestClassifiersDiversity():
         assert np.isclose(div_pred, div_true, atol=atol) 
 
     def test_invalid_metric(self):
-        div = ClassifiersDiversity(metric='dsa')
         pytest.raises(ValueError, ClassifiersDiversity, metric='dsa')
 
     def test_invalid_oracle_none(self):

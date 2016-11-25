@@ -1,3 +1,3 @@
-from brew.metrics.diversity.base import Diversity
+from skensemble.metrics.diversity.base import ClassifiersDiversity
 
-__all__ = ['Diversity']
+__all__ = ['ClassifiersDiversity']
