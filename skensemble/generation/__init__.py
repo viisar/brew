@@ -1,7 +1,3 @@
-from brew.generation.bagging import Bagging
-from brew.generation.smote_bagging import SmoteBagging
-from brew.generation.random_subspace import RandomSubspace
+from skensemble.generation.bagging import Bagging
 
-__all__ = ['Bagging',
-           'SmoteBagging',
-           'RandomSubspace']
+__all__ = ['Bagging']

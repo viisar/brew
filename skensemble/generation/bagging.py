@@ -1,72 +1,65 @@
 import numpy as np
-from sklearn.ensemble import BaggingClassifier
 
-from brew.base import Ensemble
-from brew.combination.combiner import Combiner
-import sklearn
+from sklearn.utils import check_random_state, check_X_y
+from sklearn.base import clone, is_classifier, is_regressor
 
-from .base import PoolGenerator
+from skensemble import Ensemble
+from skensemble.generation.base import BaseEnsembleGenerator
 
+class Bagging(BaseEnsembleGenerator):
 
-class Bagging(PoolGenerator):
+    def __init__(self, base_estimator, n_estimators=100, random_state=None):
+        self.base_estimator = base_estimator
+        self.n_estimators = n_estimators
+        self.random_state = check_random_state(random_state)
+        self._ensemble = None
 
-    def __init__(self,
-                 base_classifier=None,
-                 n_classifiers=100,
-                 combination_rule='majority_vote'):
-
-        self.base_classifier = base_classifier
-        self.n_classifiers = n_classifiers
-        self.ensemble = None
-        self.combiner = Combiner(rule=combination_rule)
+        if n_estimators < 1:
+            raise ValueError('n_estimators must be greater than 0!')
 
     def fit(self, X, y):
-        self.ensemble = Ensemble()
+        X, y = check_X_y(X, y)
 
-        for _ in range(self.n_classifiers):
-            # bootstrap
-            idx = np.random.choice(X.shape[0], X.shape[0], replace=True)
-            data, target = X[idx, :], y[idx]
+        self._ensemble = Ensemble()
 
-            classifier = sklearn.base.clone(self.base_classifier)
-            classifier.fit(data, target)
+        for i in range(self.n_estimators):
+            idx = self.random_state.choice(X.shape[0], X.shape[0], replace=True)
+            X_, y_ = X[idx, :], y[idx]
+            estimator = clone(self.base_estimator)
+            self._ensemble.add(estimator.fit(X_, y_))
 
-            self.ensemble.add(classifier)
+        return self
 
-        return
+    @property
+    def ensemble(self):
+        if hasattr(self, '_ensemble') and self._ensemble is not None:
+            return self._ensemble
+        else:
+            raise Exception('Must fit before get ensemble!')
 
-    def predict(self, X):
-        out = self.ensemble.output(X)
-        return self.combiner.combine(out)
+class BaggingClassification(BaseEnsembleGenerator):
 
+    def __init__(self, base_estimator, n_estimators=100, random_state=None):
+        if not is_classifier(base_estimator):
+            raise ValueError('base_estimator must be a classifier!')
 
-class BaggingSK(PoolGenerator):
-    """"
-    This class should not be used, use brew.generation.bagging.Bagging instead.
-    """
-
-    def __init__(self,
-                 base_classifier=None,
-                 n_classifiers=100,
-                 combination_rule='majority_vote'):
-
-        self.base_classifier = base_classifier
-        self.n_classifiers = n_classifiers
-
-        # using the sklearn implementation of bagging for now
-        self.sk_bagging = BaggingClassifier(base_estimator=base_classifier,
-                                            n_estimators=n_classifiers,
-                                            max_samples=1.0,
-                                            max_features=1.0)
-
-        self.ensemble = Ensemble()
-        self.combiner = Combiner(rule=combination_rule)
+        super(BaggingClassification, self).__init__(base_estimator, 
+                n_estimators, random_state)
 
     def fit(self, X, y):
-        self.sk_bagging.fit(X, y)
-        self.ensemble.add_classifiers(self.sk_bagging.estimators_)
-        # self.classes_ = set(y)
+        super(BaggingClassification, self).fit(X, y)
+        return self
 
-    def predict(self, X):
-        out = self.ensemble.output(X)
-        return self.combiner.combine(out)
+class BaggingRegression(BaseEnsembleGenerator):
+
+    def __init__(self, base_estimator, n_estimators=100, random_state=None):
+        if not is_regressor(base_estimator):
+            raise ValueError('base_estimator must be a regressor!')
+
+        super(BaggingRegression, self).__init__(base_estimator, 
+                n_estimators, random_state)
+
+    def fit(self, X, y):
+        super(BaggingRegression, self).fit(X, y)
+        return self
+

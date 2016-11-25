@@ -4,7 +4,6 @@ __email__ = 'brew-python-devs@googlegroups.com',
 __version__ = '0.1.4'
 
 
-from .base import Ensemble, EnsembleClassifier
+from .ensemble import Ensemble
 
-__all__ = ['Ensemble',
-           'EnsembleClassifier']
+__all__ = ['Ensemble']

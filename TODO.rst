@@ -1,0 +1,5 @@
+- update setup.py
+- update HISTORY.rst
+- update CONTRIBUTING.rst
+- update README.rst
+- update requirements.txt
