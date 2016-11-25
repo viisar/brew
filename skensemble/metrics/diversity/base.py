@@ -9,7 +9,6 @@ CLASSIFICATION_DIVERSITY_FUNCTIONS = {
     'q' : paired.q_statistics,
     'rho' : paired.correlation_coefficient_rho,
     'disagreement' : paired.disagreement,
-    'agreement' : paired.agreement,
     'df' : paired.double_fault
 }
 
@@ -33,13 +32,12 @@ class ClassifiersDiversity(object):
         - 'q' (Q Statistics) will use :meth:`q_statistics`
         - 'rho' (Correlation Coefficient Rho) will use :meth:`correlation_coefficient_rho`
         - 'disagreement' (Disagreement Measure) will use :meth:`disagreement`
-        - 'agreement' (Agreement Measure) will use :meth:`agreement`
         - 'df' (Double Fault Measure) will use :meth:`double_fault`
 
     Examples
     --------
-    >>> from brew.metrics.diversity.base import Diversity
-    >>> from brew.generation.bagging import Bagging
+    >>> from skensemble.metrics.diversity import ClassifiersDiversity
+    >>> from skensemble.generation import Bagging
     >>>
     >>> from sklearn.tree import DecisionTreeClassifier
     >>> import numpy as np
@@ -51,15 +49,15 @@ class ClassifiersDiversity(object):
     >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
     >>> bag.fit(X, y)
     >>>
-    >>> div = Diversity(metric='q')
-    >>> q = div.calculate(bag.ensemble, Xtst, ytst)
+    >>> div = ClassifiersDiversity(metric='q')
+    >>> q = div.calculate(bag.ensemble.oracle(X, y))
     >>> q < 1.01 and q > -1.01
     True
 
     See also
     --------
-    brew.metrics.diversity.paired: Paired diversity metrics.
-    brew.metrics.diversity.non_paired: Non-paired diversity metrics.
+    skensemble.metrics.diversity.paired: Paired diversity metrics.
+    skensemble.metrics.diversity.non_paired: Non-paired diversity metrics.
 
     References
     ----------
@@ -94,14 +92,13 @@ class ClassifiersDiversity(object):
         -------
         diversity: float,
             Diversity of the ensemble that generated ensemble_oracle.
-            Values of diversity metrics have different meanings:
-            - 'e':
-            - 'kw': The diversity increases with values increasing of the KW variance
-            - 'q':
-            - 'rho':
-            - 'disagreement': The diversity increases with the value of the disagreement measure.
-            - 'agreement': The diversity decreases with values increasing of the agreement measure.
-            - 'df': The diversity decreases when the value of the double-fault measure increases.
+            Values of diversity metrics have different meanings
+            - 'e': [0,1] High diversities are close to 1.
+            - 'kw': [0,1] High diversities are close to 1.
+            - 'q': [-1,1] High diversities are close to 0.
+            - 'rho': [0,1] High diversities are close to 0.
+            - 'disagreement': [0,1] High diversities close to 1.
+            - 'df': [0,1] High diversities close to 0.
         """
         if ensemble_oracle is None:
             raise ValueError('Invalid ensemble_oracle argument!')

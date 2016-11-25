@@ -1,6 +1,7 @@
 import numpy as np
 
 def __coefficients(oracle):
+    """Diversity Coefficients"""
     A = np.asarray(oracle[:, 0], dtype=bool)
     B = np.asarray(oracle[:, 1], dtype=bool)
 
@@ -12,6 +13,7 @@ def __coefficients(oracle):
     return a, b, c, d
 
 def q_statistics(oracle):
+    """Q Statistics"""
     L = oracle.shape[1]
     div = np.zeros((L * (L - 1)) / 2)
     div_i = 0
@@ -25,6 +27,7 @@ def q_statistics(oracle):
     return np.mean(div)
 
 def correlation_coefficient_rho(oracle):
+    """Correlation Coefficient Rho"""
     L = oracle.shape[1]
     div = np.zeros((L * (L - 1)) / 2)
     div_i = 0
@@ -39,6 +42,7 @@ def correlation_coefficient_rho(oracle):
     return np.mean(div)
 
 def disagreement(oracle):
+    """Disagreement Measure"""
     L = oracle.shape[1]
     div = np.zeros((L * (L - 1)) / 2)
     div_i = 0
@@ -52,9 +56,11 @@ def disagreement(oracle):
     return np.mean(div)
 
 def agreement(oracle):
+    """Agreement Measure"""
     return 1.0 / (disagreement(oracle) + 10e-24)
 
 def double_fault(oracle):
+    """Double Fault Measure"""
     L = oracle.shape[1]
     div = np.zeros((L * (L - 1)) / 2)
     div_i = 0
