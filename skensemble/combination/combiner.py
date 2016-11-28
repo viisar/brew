@@ -6,11 +6,11 @@ from skensemble.ensemble import output2votes
 
 
 CLASSIFICATION_COMBINATION_RULES = [
-    'majority_vote',
     'max',
     'min',
     'mean',
-    'median'
+    'median',
+    'majority_vote'
 ]
 
 REGRESSION_COMBINATION_RULES = [
@@ -29,17 +29,17 @@ RULES_ALLOW_WEIGHTS = [
 
 class Combiner(object):
     def __init__(self, rule='majority_vote', weights=None):
+       
+        if rule not in CLASSIFICATION_COMBINATION_RULES and
+            rule not in REGRESSION_COMBINATION_RULES:
+            raise ValueError('invalid argument rule for Combiner class')
+       
         self.__validate_weights(None, rule, weights)
 
-        self.combination_rule = rule
+        self.rule = rule
         self.weights = weights
-        self.__rule = None
 
-        if rule not in CLASSIFICATION_COMBINATION_RULES and
-           rule not in REGRESSION_COMBINATION_RULES:
-            raise Exception('invalid argument rule for Combiner class')
-
-
+        
     def __validate_weights(ensemble_output, rule, weights):
         if weights is not None:
             if rule not in RULES_ALLOW_WEIGHTS:
@@ -71,23 +71,23 @@ class Combiner(object):
 
 
     def combine(self, ensemble_output, weights=None):
-        self.__validate_setup(ensemble_output, self.combination_rule, weights)
+        self.__validate_setup(ensemble_output, self.rule, weights)
 
         rule_func = None
 
         # ensemble of classifiers
         if ensemble_output.ndim == 3:
-            rule_func = classification_rules.RULE_FUNCTIONS.get(self.combination_rule)
+            rule_func = classification_rules.RULE_FUNCTIONS.get(self.rule)
         
         # ensemble of regressors
         elif ensemble_output.ndim == 2:
-            rule_func = regression_rules.RULE_FUNCTIONS.get(self.combination_rule)
+            rule_func = regression_rules.RULE_FUNCTIONS.get(self.rule)
        
         else:
             raise ValueError('Ensemble output shape is invalid, expecting 2d or 3d array')
 
         # majority vote does not make sense with probabilities output
-        if self.combination_rule == 'majority_vote':
+        if self.rule == 'majority_vote':
             ensemble_output = output2votes(ensemble_output)
 
         n_samples = ensemble_output.shape[0]
