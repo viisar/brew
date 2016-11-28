@@ -18,7 +18,24 @@ RULE_FUNCTIONS = {
 }
 
 
-def max_rule(probs):
+def _validate_posterior_probs(array):
+    """ Checks if array represents a posterior probability ensemble output.
+        
+    Sums the columns of all the rows to check if the probabilities
+    of each example sum up to one.
+
+    Parameters
+    ----------
+    array:  Numpy 2d-array with rows representing each class, columns
+            representing each classifier.
+    """
+
+    if not np.all(a.sum(axis=1) == 1):
+        raise ValueError('Input to this combination rule should be a posterior'
+                         'probability array with columns summing to one')
+
+
+def max_rule(array):
     """ Implements the max rule as defined by [1].
 
     This rule only makes sense if the classifiers output
@@ -26,16 +43,19 @@ def max_rule(probs):
 
     Parameters
     ----------
-    probs:  Numpy 2d-array with rows representing each class, columns
+    array:  Numpy 2d-array with rows representing each class, columns
             representing each classifier and elements representing
-            posterior probabilities. Each column should sum up to
-            one as a sanity check that the probabilities are valid.
+            posterior probabilities.
+
+    returns Numpy 1d-array with each element representing the combination
+            of all classifier's output on a single sample using the max rule.
     """
 
-    return probs.max(axis=1).argmax()
+    _validate_posterior_probs(array)
+    return array.max(axis=1).argmax()
 
 
-def min_rule(probs):
+def min_rule(array):
     """ Implements the min rule as defined by [1].
 
     This rule only makes sense if the classifiers output
@@ -43,55 +63,62 @@ def min_rule(probs):
 
     Parameters
     ----------
-    probs:  Numpy 2d-array with rows representing each class, columns
+    array:  Numpy 2d-array with rows representing each class, columns
             representing each classifier and elements representing
-            posterior probabilities. Each column should sum up to
-            one as a sanity check that the probabilities are valid.
+            posterior probabilities.
+
+    returns Numpy 1d-array with each element representing the combination
+            of all classifier's output on a single sample using the min rule.
     """
 
-    return probs.min(axis=1).argmax()
+    _validate_posterior_probs(array)
+    return array.min(axis=1).argmax()
 
 
-def mean_rule(probs):
-    """
-    Implements the first case of the median rule as defined by [1].
+def mean_rule(array):
+    """ Implements the first case of the median rule (i.e. mean rule) as defined by [1].
 
     This rule only makes sense if the classifiers output
     the posterior probabilities for each class.
 
     Parameters
     ----------
-    probs:  Numpy 2d-array with rows representing each class, columns
+    array:  Numpy 2d-array with rows representing each class, columns
             representing each classifier and elements representing
-            posterior probabilities. Each column should sum up to
-            one as a sanity check that the probabilities are valid.
+            posterior probabilities.
+
+    returns Numpy 1d-array with each element representing the combination
+            of all classifier's output on a single sample using the mean
+            rule.
     """
 
+    _validate_posterior_probs(array)
     return probs.mean(axis=1).argmax()
 
 
-def median_rule(probs):
-    """
-    Implements the second case of the median rule as defined by [1].
+def median_rule(array):
+    """ Implements the second case of the median rule as defined by [1].
 
     This rule only makes sense if the classifiers output
     the posterior probabilities for each class.
 
     Parameters
     ----------
-    probs:  Numpy 2d-array with rows representing each class, columns
+    array:  Numpy 2d-array with rows representing each class, columns
             representing each classifier and elements representing
-            posterior probabilities. Each column should sum up to
-            one as a sanity check that the probabilities are valid.
+            posterior probabilities.
+
+    returns Numpy 1d-array with each element representing the combination
+            of all classifier's output on a single sample using the median
+            rule.
     """
 
-    # numpy array has no median method
-    return np.median(probs, axis=1).argmax()
+    _validate_posterior_probs(array)
+    return np.median(array, axis=1).argmax()
 
 
-def majority_vote_rule(votes):
-    """
-    Implements the majority vote rule as defined by [1].
+def majority_vote_rule(array):
+    """ Implements the majority vote rule as defined by [1].
 
     This rule can always be used, because even if the classifiers output
     posterior probabilities, you can for example, decide to vote for
@@ -101,10 +128,9 @@ def majority_vote_rule(votes):
 
     Parameters
     ----------
-    votes:  Numpy 2d-array with rows representing each class, columns
+    array:  Numpy 2d-array with rows representing each class, columns
             representing each classifier and elements representing
-            votes (binary). Each column should sum up to one (i.e.
-            a classifier can only vote for one class).
+            votes.
     """
 
     return votes.sum(axis=1).argmax()
