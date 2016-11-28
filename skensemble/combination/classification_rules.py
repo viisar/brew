@@ -10,19 +10,19 @@ import numpy as np
 
 
 RULE_FUNCTIONS = {
-    'majority_vote': majority_vote_rule,
     'max': max_rule,
     'min': min_rule,
     'mean': mean_rule,
-    'median': median_rule
+    'median': median_rule,
+    'majority_vote': majority_vote_rule
 }
 
 
 def _validate_posterior_probs(array):
     """ Checks if array represents a posterior probability ensemble output.
         
-    Sums the columns of all the rows to check if the probabilities
-    of each example sum up to one.
+    Sums the rows of all the columns to check if the output probabilities
+    of each classifier sum up to one.
 
     Parameters
     ----------
@@ -30,7 +30,7 @@ def _validate_posterior_probs(array):
             representing each classifier.
     """
 
-    if not np.all(a.sum(axis=1) == 1):
+    if not np.all(a.sum(axis=0) == 1):
         raise ValueError('Input to this combination rule should be a posterior'
                          'probability array with columns summing to one')
 
