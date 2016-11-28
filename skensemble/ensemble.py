@@ -3,7 +3,7 @@ import numpy as np
 import sklearn.utils
 
 def output2votes(ensemble_output):
-    votes = np.zeros_like(output, dtype=int)
+    votes = np.zeros_like(ensemble_output, dtype=int)
 
     for idx_estimator in range(votes.shape[2]):
         idx_classes = np.argmax(ensemble_output[:, :, idx_estimator], axis=1)
