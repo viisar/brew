@@ -7,7 +7,38 @@ from skensemble import Ensemble
 from skensemble.generation.base import BaseEnsembleGenerator
 
 class Bagging(BaseEnsembleGenerator):
+    """A Bagging Ensemble Generator.
 
+    Bagging is an ensemble generation method that fits base
+    estimators (classifiers or regressors) using random subsets
+    of samples from the training set.
+        
+    Parameters
+    ----------
+    base_estimator : object, estimator
+        Base estimator used to build the ensemble.
+
+    n_estimators : int, optional (default=100)
+        Number of base estimators in the ensemble.
+
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by `np.random`.
+
+    Attributes
+    ----------
+    base_estimator : estimator
+        The base estimator used to build the ensemble.
+
+    ensemble : object Ensemble
+        Fitted ensemble of fitted base estimators.
+
+    References
+    ----------
+    L. Breiman, "Bagging predictors", Machine Learning, 24(2), 123-140, 1996.
+    """
     def __init__(self, base_estimator, n_estimators=100, random_state=None):
         self.base_estimator = base_estimator
         self.n_estimators = n_estimators
@@ -18,6 +49,20 @@ class Bagging(BaseEnsembleGenerator):
             raise ValueError('n_estimators must be greater than 0!')
 
     def fit(self, X, y):
+        """Build an ensemble of estimators from the training set (X, y).
+
+        Parameters
+        ----------
+        X : ndarray, shape = (n_samples, n_features)
+            The input data from the training set.
+        y : ndarray, shape = (n_samples)
+            The target data from the training set.
+
+        Returns
+        -------
+        self : object
+            Returns self.
+        """
         X, y = check_X_y(X, y)
 
         self._ensemble = Ensemble()
@@ -36,30 +81,4 @@ class Bagging(BaseEnsembleGenerator):
             return self._ensemble
         else:
             raise Exception('Must fit before get ensemble!')
-
-class BaggingClassification(BaseEnsembleGenerator):
-
-    def __init__(self, base_estimator, n_estimators=100, random_state=None):
-        if not is_classifier(base_estimator):
-            raise ValueError('base_estimator must be a classifier!')
-
-        super(BaggingClassification, self).__init__(base_estimator, 
-                n_estimators, random_state)
-
-    def fit(self, X, y):
-        super(BaggingClassification, self).fit(X, y)
-        return self
-
-class BaggingRegression(BaseEnsembleGenerator):
-
-    def __init__(self, base_estimator, n_estimators=100, random_state=None):
-        if not is_regressor(base_estimator):
-            raise ValueError('base_estimator must be a regressor!')
-
-        super(BaggingRegression, self).__init__(base_estimator, 
-                n_estimators, random_state)
-
-    def fit(self, X, y):
-        super(BaggingRegression, self).fit(X, y)
-        return self
 
