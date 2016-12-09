@@ -75,7 +75,7 @@ class OLA2(DCS):
         scores = [clf.score(X, y) for clf in ensemble.classifiers]
         for i, scr in enumerate(scores):
             d[scr] = d[scr] + [i] if scr in d else [i]
-        best_scores = sorted([k for k in d.iterkeys()], reverse=True)
+        best_scores = sorted([k for k in list(d.keys())], reverse=True)
 
         # if there was a single best classifier, return it
         if len(d[best_scores[0]]) == 1:

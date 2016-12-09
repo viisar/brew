@@ -109,7 +109,7 @@ class LCA2(DCS):
             d[str(scores[j])] = d[str(scores[j])] + [j] if str(scores[j]) in d else [j]
 
 
-        best_scores = sorted([float(k) for k in d.iterkeys()], reverse=True)
+        best_scores = sorted([float(k) for k in list(d.keys())], reverse=True)
 
         options = None
         for j, score in enumerate(best_scores):
