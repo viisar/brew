@@ -89,6 +89,11 @@ Example
         X, y = iris_data()
         X = X[:,[0, 2]]
 
+        # WARNING, WARNING, WARNING
+        # brew requires classes from 0 to N, no skipping allowed
+        d = {yi : i for i, yi in enumerate(set(y))}
+        y = np.array([d[yi] for yi in y])
+
         # Plotting Decision Regions
         gs = gridspec.GridSpec(2, 3)
         fig = plt.figure(figsize=(10, 8))
