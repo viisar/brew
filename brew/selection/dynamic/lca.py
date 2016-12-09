@@ -128,7 +128,6 @@ class LCA2(DCS):
 
         return Ensemble([ensemble.classifiers[np.argmax(scores)]]), None
 
-
 class LCA(DCS):
 
     def select(self, ensemble, x):
@@ -136,9 +135,9 @@ class LCA(DCS):
             return Ensemble([ensemble.classifiers[0]]), None
 
         # obtain the K nearest neighbors in the validation set
-        [idx] = self.knn.kneighbors(x, return_distance=False)
-        neighbors_X = self.Xval[idx]  # k neighbors
-        neighbors_y = self.yval[idx]  # k neighbors target
+        [idx] = self.knn.kneighbors(x, n_neighbors=self.K, return_distance=False)
+        neighbors_X = self.Xval[idx] # k neighbors
+        neighbors_y = self.yval[idx] # k neighbors target
 
         # pool_output (sample, classifier_output)
         pool_output = np.zeros((neighbors_X.shape[0], len(ensemble)))
@@ -152,9 +151,13 @@ class LCA(DCS):
         scores = np.zeros(len(ensemble))
         for j in range(pool_output.shape[1]):
             # get correctly classified samples
-            mask = pool_output[:, j] == neighbors_y
+            mask_classified_correctly = pool_output[:, j] == neighbors_y
+            # get classified samples with the same class as 'x'
+            mask_classified_same_class = (pool_output[:, j] == x_outputs[j])
             # get correctly classified samples with the same class as 'x'
-            mask = (pool_output[:, j] == x_outputs[j]) * mask
-            scores[j] = sum(mask)
+            mask = mask_classified_correctly * mask_classified_same_class
+            # calculate score
+            scores[j] = float(sum(mask)) / (sum(mask_classified_same_class) + 10e-24)
 
         return Ensemble([ensemble.classifiers[np.argmax(scores)]]), None
+
