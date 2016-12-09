@@ -12,8 +12,9 @@ from sklearn.cross_validation import train_test_split
 from brew.base import Ensemble
 from brew.generation.bagging import *
 from brew.selection.dynamic.knora import *
+from brew.selection.dynamic.lca import LCA, LCA2
 
-N=10000
+N=100
 X, y = datasets.make_hastie_10_2(n_samples=N, random_state=1)
 for i, yi in enumerate(set(y)):
     y[y == yi] = i
@@ -101,4 +102,18 @@ class TestKNORA_U():
                 assert c_p == c_t
             assert len(w_pred) == len(w_true)
             assert np.all(np.array(w_pred) == np.array(w_true))
+
+class TestLCA():
+    def test_simple(self):
+        selector_pred = LCA(Xval=Xval, yval=yval)
+        for x in Xtst:
+            pool_pred, w_pred = selector_pred.select(bag.ensemble, x)
+            assert w_pred is None
+
+    def test_simple2(self):
+        selector_pred = LCA2(Xval=Xval, yval=yval)
+        for x in Xtst:
+            pool_pred, w_pred = selector_pred.select(bag.ensemble, x)
+            assert w_pred is None
+
 

@@ -74,7 +74,7 @@ class LCA2(DCS):
         knn : sklearn KNeighborsClassifier (default=None), a classifier
             to find the neighborhood of each sample.
         '''
-        super(LCA, self).__init__(Xval, yval, K, weighted, knn)
+        super(LCA2, self).__init__(Xval, yval, K, weighted, knn)
 
     def select(self, ensemble, x):
 
@@ -99,17 +99,21 @@ class LCA2(DCS):
         scores = np.zeros(len(ensemble))
         for j in range(pool_output.shape[1]):
             # get correctly classified samples
-            mask = pool_output[:, j] == neighbors_y
-            # get
-            mask = (pool_output[:, j] == x_outputs[j]) * mask
-            scores[j] = sum(mask)
-            d[scores[j]] = d[scores[j]] + [j] if scores[j] in d else [j]
+            mask_classified_correctly = pool_output[:, j] == neighbors_y
+            # get classified samples with the same class as 'x'
+            mask_classified_same_class = (pool_output[:, j] == x_outputs[j])
+            # get correctly classified samples with the same class as 'x'
+            mask = mask_classified_correctly * mask_classified_same_class
+            # calculate score
+            scores[j] = float(sum(mask)) / (sum(mask_classified_same_class) + 10e-24)
+            d[str(scores[j])] = d[str(scores[j])] + [j] if str(scores[j]) in d else [j]
 
-        best_scores = sorted([k for k in d.iterkeys()], reverse=True)
+
+        best_scores = sorted([float(k) for k in d.iterkeys()], reverse=True)
 
         options = None
         for j, score in enumerate(best_scores):
-            pred = [x_outputs[i] for i in d[score]]
+            pred = [x_outputs[i] for i in d[str(score)]]
             pred = np.asarray(pred).flatten()
 
             bincount = np.bincount(pred.astype(int))
