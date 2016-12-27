@@ -1,6 +1,8 @@
 import numpy as np
 
-from brew.base import Ensemble
+from skensemble.ensemble import Ensemble
+from skensemble.ensemble import output2labels
+
 from .base import DCS
 
 
@@ -39,7 +41,7 @@ class LCA(DCS):
 
     See also
     --------
-    skensemble.selection.dynamic.lca.LCA: Local Class Accuracy.
+    skensemble.selection.dynamic.ola.OLA: Overall Local Accuracy.
 
     References
     ----------
