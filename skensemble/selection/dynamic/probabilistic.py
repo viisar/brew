@@ -1,66 +1,81 @@
 import numpy as np
-import abc
 
-from brew.base import Ensemble
+from abc import abstractmethod
+
+from sklearn.utils import check_random_state
+
+from skensemble.ensemble import Ensemble
 from .base import DCS
 
-
 class Probabilistic(DCS):
+    #TODO handle base classifiers without predict_proba method
+    # without requiring classes to follow the LabelEncoder pattern.
+    """Base class for APriori and APosteriori dynamic selection.
 
-    def __init__(self,
-                 Xval,
-                 yval,
-                 K=5,
-                 weighted=False,
-                 knn=None,
-                 threshold=0.1):
+    WARNING: this class should not be initialized.
+    Use either APriori or APosteriori classes.
+    """
+    def __init__(self, roc_selector=None, roc_size=7, threshold=0.1, random_state=None):
+        super(Probabilistic, self).__init__(roc_selector, roc_size)
+
+        if threshold <= 0 or threshold >= 1:
+            raise ValueError('threshold must be in the interval (0,1)!')
+
         self.threshold = threshold
-        super(Probabilistic, self).__init__(
-            Xval, yval, K=K, weighted=weighted, knn=knn)
+        self.random_state = check_random_state(random_state)
 
-    @abc.abstractmethod
+    @abstractmethod
     def probabilities(self, clf, nn_X, nn_y, distances, x):
         pass
 
-    def select(self, ensemble, x):
+    def __proba_scores(self, clf, X):
+        if hasattr(clf, 'predict_proba'):
+            proba = clf.predict_proba(X)
+        elif hasattr(clf, 'decision_function'):
+            score = clf.decision_function(X)
+            if np.ndim(score) == 1:
+                d = {class_ : idx for idx, class_ in enumerate(clf.classes_)}
+                labels = [d[class_] for class_ in clf.predict(X)]
+
+                new_score = np.zeros((X.shape[0], 2), dtype=float)
+                for i in range(len(labels)):
+                    new_score[i, labels[i]] = score[i]
+                score = np.abs(new_score)
+
+            proba = np.exp(score) / np.sum(np.exp(score), axis=1)[:, np.newaxis]
+
+        return proba
+
+
+    def _select(self, ensemble, x):
         selected_classifier = None
 
-        nn_X, nn_y, dists = self.get_neighbors(x,
-                                               return_distance=True)
+        X, y, dists = self.get_roc(x, return_distance=True)
 
-        idx_selected, prob_selected = [], []
+        p_correct = np.zeros(len(ensemble), dtype=float)
+        for j in range(len(ensemble)):
+            p_correct[j] = self.probabilities(clf, X, y, dists, x)
 
-        all_probs = np.zeros(len(ensemble))
-        for idx, clf in enumerate(ensemble.classifiers):
-            prob = self.probabilities(clf, nn_X, nn_y, dists, x)
-            if prob > 0.5:
-                idx_selected = idx_selected + [idx]
-                prob_selected = prob_selected + [prob]
-
-            all_probs[idx] = prob
-
-        if len(prob_selected) == 0:
-            prob_selected = [np.max(all_probs)]
-            idx_selected = [np.argmax(all_probs)]
-
-        p_correct_m = max(prob_selected)
-        m = np.argmax(prob_selected)
-
+        [idx_selected] = np.where(p_correct >= 0.5)
+        if len(idx_selected) == 0:
+            idx_selected = [np.argmax(p_correct)]
+        
+        m = np.argmax(p_correct)
         selected = True
-        diffs = []
-        for j, p_correct_j in enumerate(prob_selected):
-            d = p_correct_m - p_correct_j
-            diffs.append(d)
-            if j != m and d < self.threshold:
-                selected = False
 
-        if selected:
-            selected_classifier = ensemble.classifiers[idx_selected[m]]
+        d = np.zeros(len(idx_selected), dtype=float)
+        for i, j in enumerate(idx_selected):
+            d[i] = p_correct[m] - p_correct[j]
+            if j != m and d[i] < self.threshold:
+                selected = False
+                # can not break because has to calculate all d[i]
+
+        if selected == True:
+            selected_classifier = ensemble._estimators[m]
         else:
-            idx_selected = np.asarray(idx_selected)
-            mask = np.array(np.array(diffs) < self.threshold, dtype=bool)
-            i = np.random.choice(idx_selected[mask])
-            selected_classifier = ensemble.classifiers[i]
+            idx_selected = idx_selected[d < self.threshold]
+            idx = self.random_state.choice(idx_selected)
+            selected_classifier = self._estimators[idx]
 
         return Ensemble([selected_classifier]), None
 
@@ -74,45 +89,36 @@ class APriori(Probabilistic):
 
     Attributes
     ----------
-    `Xval` : array-like, shape = [indeterminated, n_features]
-        Validation set.
+    Xval : array-like, shape (n_samples, n_features)
+        Samples of the validation set.
 
-    `yval` : array-like, shape = [indeterminated]
+    yval : array-like, shape (n_samples)
         Labels of the validation set.
 
-    `knn`  : sklearn KNeighborsClassifier,
-        Classifier used to find neighborhood.
+    roc_selector : estimator, optional (default = KNeighborsClassifier)
+        Estimator used to select the region of competence of the test samples.
+        Must implement the kneighbors method. Usually, the estimator used is
+        the KNeighborsClassifier from scikit-learn.
 
-    `threshold`  : float, default = 0.1
+    roc_size : int, size of the region of competence, optional (default = 7)
+        The number of neighbors used when selecting the region of competence of
+        the test sample. Depending on the roc_selector used, roc_size might be
+        ignored.
+
+    threshold : float, optional (default = 0.1)
         Threshold used to verify if there is a single best.
 
-    Examples
-    --------
-    >>> from brew.selection.dynamic.probabilistic import APriori
-    >>> from brew.generation.bagging import Bagging
-    >>> from brew.base import EnsembleClassifier
-    >>>
-    >>> from sklearn.tree import DecisionTreeClassifier as Tree
-    >>> import numpy as np
-    >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0] ,
-                      [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
-    >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
-    >>> tree = Tree(max_depth=1, min_samples_leaf=1)
-    >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
-    >>> bag.fit(X, y)
-    >>>
-    >>> apriori = APriori(X, y, K=3)
-    >>>
-    >>> clf = EnsembleClassifier(bag.ensemble, selector=apriori)
-    >>> clf.predict([-1.1,-0.5])
-    [1]
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by np.random.
 
     See also
     --------
-    brew.selection.dynamic.probabilistic.APosteriori: A Posteriori DCS.
-    brew.selection.dynamic.ola.OLA: Overall Local Accuracy.
-    brew.selection.dynamic.lca.LCA: Local Class Accuracy.
+    skensemble.selection.dynamic.probabilistic.APosteriori: A Posteriori DCS.
+    skensemble.selection.dynamic.ola.OLA: Overall Local Accuracy.
+    skensemble.selection.dynamic.lca.LCA: Local Class Accuracy.
 
     References
     ----------
@@ -124,38 +130,20 @@ class APriori(Probabilistic):
     "From dynamic classifier selection to dynamic ensemble selection."
     Pattern Recognition 41.5 (2008): 1718-1731.
     """
+    def __init__(self, roc_selector=None, roc_size=7, threshold=0.1, random_state=None):
+        super(APriori, self).__init__(roc_selector=roc_selector, roc_size=roc_size, 
+                threshold=threshold, random_state=random_state)
 
-    def __init__(self,
-                 Xval,
-                 yval,
-                 K=5,
-                 weighted=False,
-                 knn=None,
-                 threshold=0.1):
-        self.threshold = threshold
-        super(APriori, self).__init__(
-            Xval, yval, K=K, weighted=weighted, knn=knn)
-
-    def probabilities(self, clf, nn_X, nn_y, distances, x):
-        # in the A Priori method, the 'x' is not used
-        if hasattr(clf, 'predict_proba'):
-            proba = clf.predict_proba(nn_X)
-        elif hasattr(clf, 'decision_function'):
-            dc = clf.decision_function(nn_X)
-            if len(dc.shape) == 1:
-                cl = clf.predict(nn_X).astype(int)
-                sc = np.zeros((dc.shape[0], 2))
-                for i in range(len(nn_X)):
-                    sc[i, cl[i]] = dc[i]
-                dc = np.abs(sc)
-            proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:, np.newaxis]
+    def probabilities(self, clf, X, y, distances, x):
+        proba = self.__proba_scores(clf, X)
 
         d = dict(list(enumerate(clf.classes_)))
-        col_idx = np.zeros(nn_y.size, dtype=int)
-        for i in range(nn_y.size):
-            col_idx[i] = d[nn_y[i]] if nn_y[i] in d else proba.shape[1] - 1
+        proba_col = [d[y_i] for y_i in y if y_i in d else None]
 
-        probabilities = proba[np.arange(col_idx.size), col_idx]
+        probabilities = [proba[i, proba_col[i]] for i in range(len(y))\
+                if col[i] is not None else 0.0]
+        probabilities = np.array(proba)
+
         delta = 1. / (distances + 10e-8)
 
         p_correct = np.sum(probabilities * delta) / np.sum(delta)
@@ -163,7 +151,7 @@ class APriori(Probabilistic):
 
 
 class APosteriori(Probabilistic):
-    """A Priori Classifier Selection.
+    """A Posteriori Classifier Selection.
 
     The A Priori method is a dynamic classifier selection that
     uses a probabilistic-based measures for selecting the best
@@ -171,46 +159,36 @@ class APosteriori(Probabilistic):
 
     Attributes
     ----------
-    `Xval` : array-like, shape = [indeterminated, n_features]
-        Validation set.
+    Xval : array-like, shape (n_samples, n_features)
+        Samples of the validation set.
 
-    `yval` : array-like, shape = [indeterminated]
+    yval : array-like, shape (n_samples)
         Labels of the validation set.
 
-    `knn`  : sklearn KNeighborsClassifier,
-        Classifier used to find neighborhood.
+    roc_selector : estimator, optional (default = KNeighborsClassifier)
+        Estimator used to select the region of competence of the test samples.
+        Must implement the kneighbors method. Usually, the estimator used is
+        the KNeighborsClassifier from scikit-learn.
 
-    `threshold`  : float, default = 0.1
+    roc_size : int, size of the region of competence, optional (default = 7)
+        The number of neighbors used when selecting the region of competence of
+        the test sample. Depending on the roc_selector used, roc_size might be
+        ignored.
+
+    threshold : float, optional (default = 0.1)
         Threshold used to verify if there is a single best.
 
-    Examples
-    --------
-    >>> from brew.selection.dynamic.probabilistic import APosteriori
-    >>> from brew.generation.bagging import Bagging
-    >>> from brew.base import EnsembleClassifier
-    >>>
-    >>> from sklearn.tree import DecisionTreeClassifier as Tree
-    >>> import numpy as np
-    >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1],
-                      [-0.5, 0] , [0.5, 0], [1, 0],
-                      [0.8, 1], [0.8, -1]])
-    >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
-    >>> tree = Tree(max_depth=1, min_samples_leaf=1)
-    >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
-    >>> bag.fit(X, y)
-    >>>
-    >>> aposteriori = APosteriori(X, y, K=3)
-    >>>
-    >>> clf = EnsembleClassifier(bag.ensemble, selector=aposteriori)
-    >>> clf.predict([-1.1,-0.5])
-    [1]
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by np.random.
 
     See also
     --------
-    brew.selection.dynamic.probabilistic.APriori: A Priori DCS.
-    brew.selection.dynamic.ola.OLA: Overall Local Accuracy.
-    brew.selection.dynamic.lca.LCA: Local Class Accuracy.
+    skensemble.selection.dynamic.probabilistic.APriori: A Priori DCS.
+    skensemble.selection.dynamic.ola.OLA: Overall Local Accuracy.
+    skensemble.selection.dynamic.lca.LCA: Local Class Accuracy.
 
     References
     ----------
@@ -222,40 +200,23 @@ class APosteriori(Probabilistic):
     "From dynamic classifier selection to dynamic ensemble selection."
     Pattern Recognition 41.5 (2008): 1718-1731.
     """
+    def __init__(self, roc_selector=None, roc_size=7, threshold=0.1, random_state=None):
+        super(APosteriori, self).__init__(roc_selector=roc_selector,
+                roc_size=roc_size, threshold=threshold,
+                random_state=random_state)
 
-    def __init__(self,
-                 Xval,
-                 yval,
-                 K=5,
-                 weighted=False,
-                 knn=None,
-                 threshold=0.1):
-        self.threshold = threshold
-        super(APosteriori, self).__init__(
-            Xval, yval, K=K, weighted=weighted, knn=knn)
-
-    def probabilities(self, clf, nn_X, nn_y, distances, x):
-        [w_l] = clf.predict(x)
-        [idx_w_l] = np.where(nn_y == w_l)
+    def probabilities(self, clf, X, y, distances, x):
+        [w_l] = clf.predict(x.reshape(1,-1))
+        [idx_w_l] = np.where(y == w_l)
         [proba_col] = np.where(clf.classes_ == w_l)
 
-        # in the A Posteriori method the 'x' is used
-        if hasattr(clf, 'predict_proba'):
-            proba = clf.predict_proba(nn_X)
-        elif hasattr(clf, 'decision_function'):
-            dc = clf.decision_function(nn_X)
-            if len(dc.shape) == 1:
-                cl = clf.predict(nn_X).astype(int)
-                sc = np.zeros((dc.shape[0], 2))
-                for i in range(len(nn_X)):
-                    sc[i, cl[i]] = dc[i]
-                dc = np.abs(sc)
-            proba = np.exp(dc) / np.sum(np.exp(dc), axis=1)[:, np.newaxis]
-
-        # if the classifier never classifies as class w_l, P(w_l|psi_i) = 0
+        proba = self.__proba_scores(clf, X)
 
         delta = 1. / (distances + 10e-8)
 
-        numerator = sum(proba[idx_w_l, proba_col].ravel() * delta[idx_w_l])
-        denominator = sum(proba[:, proba_col].ravel() * delta)
+        numerator = np.sum(proba[idx_w_l, proba_col].ravel() * delta[idx_w_l])
+        denominator = np.sum(proba[:, proba_col].ravel() * delta)
+
+        # if the classifier never classifies as class w_l, P(w_l|psi_i) = 0
         return float(numerator) / (denominator + 10e-8)
+
