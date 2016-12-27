@@ -91,7 +91,7 @@ class OLA(DCS):
                     [c_idx] = np.where(test_labels[high_score_idx] == consensus)
                     best_estimator_idx = high_score_idx[c_idx[0]]
                     best_estimator = ensemble._estimators[best_estimator_idx]
-                    return Ensemble([best_estimator])
+                    return Ensemble([best_estimator]), None
                 elif options is None:
                     options = set(test_labels[idx])
                 else:
