@@ -7,8 +7,11 @@ from .base import DCS
 class LCA(DCS):
     """Local Class Accuracy.
 
-    The Overall Local Accuracy selects the best classifier for
-    a sample using it's K nearest neighbors.
+    The Local Class Accuracy selects the best classifier for
+    a sample using it's K nearest neighbors, estimating the
+    competence of the classifiers as the accuracy considering
+    all neighbors classified as being from the same class
+    as the class assigned to the test sample.
 
     Attributes
     ----------
