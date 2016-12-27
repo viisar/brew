@@ -6,7 +6,7 @@ from .base import DCS
 
 from skensemble.ensemble import Ensemble
 
-class KNORA_E(DCS):
+class KNORA_ELIMINATE(DCS):
     """K-nearest-oracles Eliminate.
 
     The KNORA Eliminate reduces the neighborhood until finds an
@@ -32,7 +32,7 @@ class KNORA_E(DCS):
 
     See also
     --------
-    skensemble.selection.dynamic.knora.KNORA_U: KNORA Union.
+    skensemble.selection.dynamic.knora.KNORA_UNION: KNORA Union.
 
     References
     ----------
@@ -45,7 +45,7 @@ class KNORA_E(DCS):
     Pattern Recognition 47.11 (2014): 3665-3680.
     """
     def __init__(self, roc_selector=None, roc_size=7):
-        super(KNORA_E, self).__init__(roc_selector, roc_size)
+        super(KNORA_ELIMINATE, self).__init__(roc_selector, roc_size)
 
     def _select(self, ensemble, x):
         # get the region of competence (ROC).
@@ -74,7 +74,7 @@ class KNORA_E(DCS):
         selected = [ensemble._estimators[i] for i in selected_idx]
         return Ensemble(estimators=selected), None
 
-class KNORA_U(DCS):
+class KNORA_UNION(DCS):
     """K-nearest-oracles Union.
 
     The KNORA union reduces the neighborhood until finds an
@@ -105,7 +105,7 @@ class KNORA_U(DCS):
 
     See also
     --------
-    skensemble.selection.dynamic.knora.KNORA_E: KNORA Eliminate.
+    skensemble.selection.dynamic.knora.KNORA_ELIMINATE: KNORA Eliminate.
 
     References
     ----------
@@ -118,7 +118,7 @@ class KNORA_U(DCS):
     Pattern Recognition 47.11 (2014): 3665-3680.
     """
     def __init__(self, roc_selector=None, roc_size=7, weighted=False):
-        super(KNORA_U, self).__init__(roc_selector, roc_size)
+        super(KNORA_UNION, self).__init__(roc_selector, roc_size)
         self.weighted = weighted
 
     def _select(self, ensemble, x):
