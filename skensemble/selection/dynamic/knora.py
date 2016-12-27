@@ -58,7 +58,7 @@ class KNORA_ELIMINATE(DCS):
 
         # reduces the roc_size until selects at least 1 classifier
         # correctly classify all samples in the ROC.
-        for k in range(self.roc_size, 0, -1):
+        for k in range(len(y), 0, -1):
             mask = np.all(oracle[:k,:], axis=0)
             if np.any(mask):
                 [selected_idx] = np.where(mask)
