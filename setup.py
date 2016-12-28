@@ -13,7 +13,7 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
-with open('brew/__init__.py') as fid:
+with open('skensemble/__init__.py') as fid:
     for line in fid:
         if line.startswith('__version__'):
             VERSION = line.strip().split()[-1][1:-1]

@@ -1,4 +1,4 @@
-from brew.stacking.stacker import EnsembleStack, EnsembleStackClassifier
+from skensemble.stacking.stacker import EnsembleStack, EnsembleStackClassifier
 
 __all__ = ['EnsembleStack',
            'EnsembleStackClassifier']
