@@ -1,52 +1,47 @@
 import numpy as np
 
-from brew.base import Ensemble
+from skensemble.ensemble import Ensemble
+from skensemble.ensemble import output2labels
+
 from .base import DCS
 
 
-class LCA2(DCS):
+class LCA(DCS):
     """Local Class Accuracy.
 
     The Local Class Accuracy selects the best classifier for
-    a sample using it's K nearest neighbors.
+    a sample using it's K nearest neighbors, estimating the
+    competence of the classifiers as the accuracy considering
+    all neighbors classified as being from the same class
+    as the class assigned to the test sample.
 
     Attributes
     ----------
-    `Xval` : array-like, shape = [indeterminated, n_features]
-        Validation set.
+    Xval : array-like, shape (n_samples, n_features)
+        Samples of the validation set.
 
-    `yval` : array-like, shape = [indeterminated]
+    yval : array-like, shape (n_samples)
         Labels of the validation set.
 
-    `knn`  : sklearn KNeighborsClassifier,
-        Classifier used to find neighborhood.
+    roc_selector : estimator, optional (default = KNeighborsClassifier)
+        Estimator used to select the region of competence of the test samples.
+        Must implement the kneighbors method. Usually, the estimator used is
+        the KNeighborsClassifier from scikit-learn.
 
+    roc_size : int, size of the region of competence, optional (default = 7)
+        The number of neighbors used when selecting the region of competence of
+        the test sample. Depending on the roc_selector used, roc_size might be
+        ignored.
 
-    Examples
-    --------
-    >>> from brew.selection.dynamic.lca import LCA
-    >>> from brew.generation.bagging import Bagging
-    >>> from brew.base import EnsembleClassifier
-    >>>
-    >>> from sklearn.tree import DecisionTreeClassifier
-    >>> import numpy as np
-    >>>
-    >>> X = np.array([[-1, 0], [-0.8, 1], [-0.8, -1], [-0.5, 0],
-                      [0.5, 0], [1, 0], [0.8, 1], [0.8, -1]])
-    >>> y = np.array([1, 1, 1, 2, 1, 2, 2, 2])
-    >>> tree = DecisionTreeClassifier(max_depth=1, min_samples_leaf=1)
-    >>> bag = Bagging(base_classifier=tree, n_classifiers=10)
-    >>> bag.fit(X, y)
-    >>>
-    >>> lca = LCA(X, y, K=3)
-    >>>
-    >>> clf = EnsembleClassifier(bag.ensemble, selector=lca)
-    >>> clf.predict([-1.1,-0.5])
-    [1]
+    tie_mode : str, how the competence ties are handled, optional (default = 'ignore')
+        - If 'ignore', randomly selects one of the  most competent estimators.
+        - If 'break', majority vote is used to break ties.
+
+        NOTE: 'ignore' is faster.
 
     See also
     --------
-    brew.selection.dynamic.ola.OLA: Overall Local Accuracy.
+    skensemble.selection.dynamic.ola.OLA: Overall Local Accuracy.
 
     References
     ----------
@@ -59,102 +54,64 @@ class LCA2(DCS):
     "From dynamic classifier selection to dynamic ensemble selection."
     Pattern Recognition 41.5 (2008): 1718-1731.
     """
+    def __init__(self, roc_selector=None, roc_size=7, tie_mode='ignore'):
+        super(LCA, self).__init__(roc_selector, roc_size)
 
-    def __init__(self, Xval, yval, K=5, weighted=False, knn=None):
-        '''
-        Parameters
-        ----------
-        Xval : Numpy 2d-array with rows representing each sample.
-        yval : Numpy 1d-array representing the target classes of
-            the samples in Xval.
-        K : int (default=5), the size of the neighborhood used to select the
-            classifier.
-        weighted : bool (default=False), if the selected classifiers are
-            weighted;
-        knn : sklearn KNeighborsClassifier (default=None), a classifier
-            to find the neighborhood of each sample.
-        '''
-        super(LCA, self).__init__(Xval, yval, K, weighted, knn)
+        if tie_mode not in VALID_TIE_MODES:
+            raise NotImplementedError
 
-    def select(self, ensemble, x):
+        self.tie_mode = tie_mode
 
-        if ensemble.in_agreement(x):
-            return Ensemble([ensemble.classifiers[0]]), None
+    def _select(self, ensemble, x):
+        X, y = self.get_roc(x, return_distance=False)
 
-        # obtain the K nearest neighbors in the validation set
-        [idx] = self.knn.kneighbors(x, return_distance=False)
-        neighbors_X = self.Xval[idx]  # k neighbors
-        neighbors_y = self.yval[idx]  # k neighbors target
-
-        # pool_output (sample, classifier_output)
-        pool_output = np.zeros((neighbors_X.shape[0], len(ensemble)))
-        for i, clf in enumerate(ensemble.classifiers):
-            pool_output[:, i] = clf.predict(neighbors_X)
-
-        x_outputs = [ensemble.classifiers[j].predict(
-            x) for j in range(len(ensemble))]
-        x_outputs = np.asarray(x_outputs).flatten()
-
-        d = {}
-        scores = np.zeros(len(ensemble))
-        for j in range(pool_output.shape[1]):
-            # get correctly classified samples
-            mask = pool_output[:, j] == neighbors_y
-            # get
-            mask = (pool_output[:, j] == x_outputs[j]) * mask
-            scores[j] = sum(mask)
-            d[scores[j]] = d[scores[j]] + [j] if scores[j] in d else [j]
-
-        best_scores = sorted([k for k in d.iterkeys()], reverse=True)
-
-        options = None
-        for j, score in enumerate(best_scores):
-            pred = [x_outputs[i] for i in d[score]]
-            pred = np.asarray(pred).flatten()
-
-            bincount = np.bincount(pred.astype(int))
-            if options is not None:
-                for i in range(len(bincount)):
-                    bincount[i] = bincount[i] if i in options else 0
-
-            imx = np.argmax(bincount)
-            votes = np.argwhere(bincount == bincount[imx]).flatten()
-            count = len(votes)
-            if count == 1:
-                ens = Ensemble([ensemble.classifiers[np.argmax(pred == imx)]])
-                return ens, None
-            elif options is None:
-                options = votes
-
-        return Ensemble([ensemble.classifiers[np.argmax(scores)]]), None
-
-
-class LCA(DCS):
-
-    def select(self, ensemble, x):
-        if ensemble.in_agreement(x):
-            return Ensemble([ensemble.classifiers[0]]), None
-
-        # obtain the K nearest neighbors in the validation set
-        [idx] = self.knn.kneighbors(x, return_distance=False)
-        neighbors_X = self.Xval[idx]  # k neighbors
-        neighbors_y = self.yval[idx]  # k neighbors target
-
-        # pool_output (sample, classifier_output)
-        pool_output = np.zeros((neighbors_X.shape[0], len(ensemble)))
-        for i, clf in enumerate(ensemble.classifiers):
-            pool_output[:, i] = clf.predict(neighbors_X)
-
-        x_outputs = [ensemble.classifiers[j].predict(
-            x) for j in range(len(ensemble))]
-        x_outputs = np.asarray(x_outputs).flatten()
+        output = ensemble.output(X)
+        labels = output2labels(output, classes=ensemble.classes_)
+        test_labels = output2labels(ensemble.output(x.reshape(1,-1)),
+                ensemble.classes_).ravel()
+        # labels shape (n_samples, n_estimators)
 
         scores = np.zeros(len(ensemble))
-        for j in range(pool_output.shape[1]):
+        for i in range(len(ensemble)):
             # get correctly classified samples
-            mask = pool_output[:, j] == neighbors_y
+            mask_classified_correctly = (labels[:, i] == y)
+            # get classified samples with the same class as 'x'
+            mask_classified_same_class = (labels[:, i] == test_labels[i])
             # get correctly classified samples with the same class as 'x'
-            mask = (pool_output[:, j] == x_outputs[j]) * mask
-            scores[j] = sum(mask)
+            mask = np.logical_and(mask_classified_correctly, mask_classified_same_class)
+            # calculate score
+            scores[i] = float(np.sum(mask)) / (np.sum(mask_classified_same_class) + 10e-24)
 
-        return Ensemble([ensemble.classifiers[np.argmax(scores)]]), None
+        assert len(scores) == len(ensemble)
+
+        if self.tie_mode == 'ignore':
+            best_estimator = ensemble._estimators[np.argmax(scores)]
+            return Ensemble([best_estimator]), None
+
+        elif self.tie_mode == 'break':
+            options = None
+
+            test_labels = output2labels(ensemble.output(x.reshape(1,-1)),
+                    ensemble.classes_)
+
+            [high_score_idx] = np.where(scores == np.max(scores))
+
+            for i, score_level in enumerate(sorted(set(score), reverse=True)):
+                [idx] = np.where(scores == score_level)
+                consensus = get_consensus(test_labels[idx], options)
+                if consensus is not None:
+                    [c_idx] = np.where(test_labels[high_score_idx] == consensus)
+                    best_estimator_idx = high_score_idx[c_idx[0]]
+                    best_estimator = ensemble._estimators[best_estimator_idx]
+                    return Ensemble([best_estimator]), None
+                elif options is None:
+                    options = set(test_labels[idx])
+                else:
+                    ties = get_ties(test_labels[idx], options=options)
+                    options = options.union(set(ties))
+
+            # if has not selected any use random selection criterion
+            best_estimator = ensemble._estimators[np.argmax(scores)]
+            return Ensemble([best_estimator]), None
+
+

@@ -1,6 +1,19 @@
 import numpy as np
 
 import sklearn.utils
+from sklearn.base import is_classifier, is_regressor
+
+ENSEMBLE_TYPE_CLASSIFIERS = 'classifiers'
+ENSEMBLE_TYPE_REGRESSORS = 'regressors'
+ENSEMBLE_TYPE_UNDEFINED = 'undefined'
+
+ENSEMBLE_TYPES = [None, ENSEMBLE_TYPE_CLASSIFIERS, ENSEMBLE_TYPE_REGRESSORS]
+
+def is_ensemble_of_classifiers(ensemble):
+    return ensemble.type_ == ENSEMBLE_TYPE_CLASSIFIERS
+
+def is_ensemble_of_regressors(ensemble):
+    return ensemble.type_ == ENSEMBLE_TYPE_REGRESSORS
 
 def output2votes(ensemble_output):
     votes = np.zeros_like(ensemble_output, dtype=int)
@@ -56,13 +69,21 @@ class Ensemble(object):
     >>> ens = Ensemble(estimators=[dt1, dt2])
 
     """
-    def __init__(self, estimators=None, is_classification=True):
-        if estimators is None:
-            self._estimators = []
-        else:
-            self._estimators = estimators
+    def __init__(self, estimators=None, type_=None):
+        self._estimators = []
 
-        self.is_classification = is_classification
+        if type_ in ENSEMBLE_TYPES:
+            self.__type = type_
+        else:
+            raise ValueError('Invalid type_ \'{}\'! type_ must be'
+                    '\'{}\' or \'{}\''.format(type_,
+                        ENSEMBLE_TYPE_CLASSIFIERS,
+                        ENSEMBLE_TYPE_REGRESSORS))
+
+        if estimators is not None:
+            for e in estimators:
+                self.append(e)
+
 
     def __len__(self):
         return len(self._estimators)
@@ -77,9 +98,59 @@ class Ensemble(object):
 
         return np.array(list(classes))
 
-    def add(self, estimator):
+    @property
+    def type_(self):
+        if self.__type is not None:
+            return self.__type
+
+        if len(self) == 0:
+            return None
+        elif is_classifier(self._estimators[0]):
+            self.__type = ENSEMBLE_TYPE_CLASSIFIERS
+            return self.__type
+        elif is_regressor(self._estimators[0]):
+            self.__type = ENSEMBLE_TYPE_REGRESSORS
+            return self.__type
+
+        return ENSEMBLE_TYPE_UNDEFINED
+
+
+    def __can_append_estimator(self, estimator):
+        ensemble_type = self.type_
+
+        if ensemble_type is None or ensemble_type == ENSEMBLE_TYPE_UNDEFINED:
+            return is_classifier(estimator) or is_regressor(estimator)
+
+        if ensemble_type == ENSEMBLE_TYPE_CLASSIFIERS:
+            return is_classifier(estimator)
+
+        if ensemble_type == ENSEMBLE_TYPE_REGRESSORS:
+            return is_regressor(estimator)
+
+        return False
+
+
+    def append(self, estimator):
+        if not self.__can_append_estimator(estimator):
+            raise ValueError('Ensemble objects can not mix classifiers'
+                    'and regressors!')
+
         self._estimators.append(estimator)
 
+        if self.type_ is None or self.type_ == ENSEMBLE_TYPE_UNDEFINED:
+            if is_classifier(estimator):
+                self.__type = ENSEMBLE_TYPE_CLASSIFIERS
+            else:
+                self.__type = ENSEMBLE_TYPE_REGRESSORS
+
+    def extend(self, estimators):
+        for estimator in estimators:
+            if not self.__can_append_estimator(estimator):
+                raise ValueError('Ensemble objects can not mix classifiers'
+                        'and regressors!')
+
+        for estimator in estimators:
+            self.append(estimator)
 
     def output(self, X):
         """
@@ -107,7 +178,7 @@ class Ensemble(object):
         n_classes = len(self.classes_)
         n_estimators = len(self._estimators)
 
-        if self.is_classification:
+        if self.type_ == ENSEMBLE_TYPE_CLASSIFIERS:
             output = np.zeros((n_samples, n_classes, n_estimators))
 
             classes_map = {c : i for i, c in enumerate(self.classes_)}
@@ -132,6 +203,12 @@ class Ensemble(object):
     def oracle(self, X, y):
         X, y = sklearn.utils.check_X_y(X, y)
         labels = output2labels(self.output(X), self.classes_)
-        return  np.equal(labels, y[:, np.newaxis])
+        return np.equal(labels, y[:, np.newaxis])
 
+    def fit(self, X, y):
+        X, y = sklearn.utils.check_X_y(X, y)
+        for estimator in self._estimators:
+            estimator.fit(X, y)
+
+        return self
 

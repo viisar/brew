@@ -4,7 +4,6 @@ from skensemble.combination import regression_rules
 
 from skensemble.ensemble import output2votes
 
-
 CLASSIFICATION_COMBINATION_RULES = [
     'max',
     'min',
@@ -26,7 +25,6 @@ RULES_ALLOW_WEIGHTS = [
     'median'
 ]
 
-
 class Combiner(object):
     def __init__(self, rule='majority_vote', weights=None):
        
@@ -38,7 +36,6 @@ class Combiner(object):
 
         self.rule = rule
         self.weights = weights
-
         
     def __validate_weights(ensemble_output, rule, weights):
         if weights is not None:

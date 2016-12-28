@@ -5,8 +5,6 @@ import pytest
 
 import numpy as np
 
-from skensemble.metrics.diversity import paired
-from skensemble.metrics.diversity import non_paired
 from skensemble.metrics.diversity import ClassifiersDiversity
 
 ensemble_oracle = np.array([
@@ -30,7 +28,6 @@ diversity_values = {
     'q' : 0.0231,                   # Q-statistic
     'rho' : 0.0156,                 # Correlation coefficient
     'disagreement' : 0.4889,        # Disagreement
-    'agreement' : (1.0 / 0.4889),   # Agreement
     'df' : 0.3156,                  # Double Fault
     'kw' : 0.2200,                  # Kohavi-Wolpert variance
     'kappa' : 0.0079,               # Interrater agreement
@@ -41,45 +38,6 @@ diversity_values = {
 }
 
 atol=0.0001
-
-class TestNonPaired():
-
-    def test_entropy(self):
-        div_pred = non_paired.entropy_e(ensemble_oracle)
-        div_true = diversity_values['e']
-        assert np.isclose(div_pred, div_true, atol=atol) 
-
-    def test_kw(self):
-        div_pred = non_paired.kohavi_wolpert_variance(ensemble_oracle)
-        div_true = diversity_values['kw']
-        assert np.isclose(div_pred, div_true, atol=atol) 
-
-class TestPaired():
-
-    def test_q(self):
-        div_pred = paired.q_statistics(ensemble_oracle)
-        div_true = diversity_values['q']
-        assert np.isclose(div_pred, div_true, atol=atol) 
-
-    def test_corr(self):
-        div_pred = paired.correlation_coefficient_rho(ensemble_oracle)
-        div_true = diversity_values['rho']
-        assert np.isclose(div_pred, div_true, atol=atol) 
-
-    def test_disag(self):
-        div_pred = paired.disagreement(ensemble_oracle)
-        div_true = diversity_values['disagreement']
-        assert np.isclose(div_pred, div_true, atol=atol) 
-
-    def test_ag(self):
-        div_pred = paired.agreement(ensemble_oracle)
-        div_true = diversity_values['agreement']
-        assert np.isclose(div_pred, div_true, atol=atol) 
-
-    def test_df(self):
-        div_pred = paired.double_fault(ensemble_oracle)
-        div_true = diversity_values['df']
-        assert np.isclose(div_pred, div_true, atol=atol) 
 
 class TestClassifiersDiversity():
 
@@ -111,12 +69,6 @@ class TestClassifiersDiversity():
         div = ClassifiersDiversity(metric='disagreement')
         div_pred = div.calculate(ensemble_oracle)
         div_true = diversity_values['disagreement']
-        assert np.isclose(div_pred, div_true, atol=atol) 
-
-    def test_ag(self):
-        div = ClassifiersDiversity(metric='agreement')
-        div_pred = div.calculate(ensemble_oracle)
-        div_true = diversity_values['agreement']
         assert np.isclose(div_pred, div_true, atol=atol) 
 
     def test_df(self):
