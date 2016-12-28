@@ -20,7 +20,7 @@ RULE_FUNCTIONS = {
 
 def _validate_posterior_probs(array):
     """ Checks if array represents a posterior probability ensemble output.
-        
+
     Sums the rows of all the columns to check if the output probabilities
     of each classifier sum up to one.
 
