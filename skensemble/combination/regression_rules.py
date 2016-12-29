@@ -3,14 +3,6 @@
 import numpy as np
 
 
-RULE_FUNCTIONS = {
-    'max': max_rule,
-    'min': min_rule,
-    'mean': mean_rule,
-    'median': median_rule
-}
-
-
 def max_rule(array):
     """ Outputs the maximum output of all the regressors.
 
@@ -65,3 +57,11 @@ def median_rule(array):
     """
 
     return np.median(array, axis=1)
+
+
+RULE_FUNCTIONS = {
+    'max': max_rule,
+    'min': min_rule,
+    'mean': mean_rule,
+    'median': median_rule
+}

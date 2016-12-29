@@ -28,7 +28,7 @@ RULES_ALLOW_WEIGHTS = [
 class Combiner(object):
     def __init__(self, rule='majority_vote', weights=None):
        
-        if rule not in CLASSIFICATION_COMBINATION_RULES and
+        if rule not in CLASSIFICATION_COMBINATION_RULES and\
             rule not in REGRESSION_COMBINATION_RULES:
             raise ValueError('invalid argument rule for Combiner class')
        

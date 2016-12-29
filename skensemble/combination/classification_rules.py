@@ -9,15 +9,6 @@
 import numpy as np
 
 
-RULE_FUNCTIONS = {
-    'max': max_rule,
-    'min': min_rule,
-    'mean': mean_rule,
-    'median': median_rule,
-    'majority_vote': majority_vote_rule
-}
-
-
 def _validate_posterior_probs(array):
     """ Checks if array represents a posterior probability ensemble output.
 
@@ -134,3 +125,12 @@ def majority_vote_rule(array):
     """
 
     return votes.sum(axis=1).argmax()
+
+
+RULE_FUNCTIONS = {
+    'max': max_rule,
+    'min': min_rule,
+    'mean': mean_rule,
+    'median': median_rule,
+    'majority_vote': majority_vote_rule
+}

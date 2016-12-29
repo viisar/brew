@@ -2,8 +2,8 @@ import numpy as np
 
 from sklearn.metrics import accuracy_score
 
-from brew.combination.combiner import Combiner
-from brew.metrics.evaluation import auc_score
+from skensemble.combination.combiner import Combiner
+from skensemble.metrics.evaluation import auc_score
 
 
 def transform2votes(output, n_classes):
