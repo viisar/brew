@@ -22,9 +22,9 @@
 
 **[DEPRECATED] brew: A Multiple Classifier Systems API**
 
-| This project has not being maintained for a while, so as of now we have abandoned it.
-| If you want an alternative ensemble library in python, we recommend [DESLib](https://github.com/Menelau/DESlib)
-| instead.
+This project has not being maintained for a while, so as of now we have abandoned it.
+If you want an alternative ensemble library in python, we recommend [DESLib](https://github.com/Menelau/DESlib)
+instead.
 
 
 | This project was started in 2014 by *Dayvid Victor* and *Thyago Porpino*
