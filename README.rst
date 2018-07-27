@@ -1,5 +1,5 @@
 =============================
-brew
+[DEPRECATED] brew
 =============================
 
 .. image:: https://badge.fury.io/py/brew.png
@@ -20,7 +20,12 @@ brew
    :target: https://gitter.im/viisar/brew?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 
-**brew: A Multiple Classifier Systems API**
+**[DEPRECATED] brew: A Multiple Classifier Systems API**
+
+| This project has not being maintained for a while, so as of now we have abandoned it.
+| If you want an alternative ensemble library in python, we recommend [DESLib](https://github.com/Menelau/DESlib)
+| instead.
+
 
 | This project was started in 2014 by *Dayvid Victor* and *Thyago Porpino*
 | for the Multiple Classifier Systems class at Federal University of Pernambuco.
